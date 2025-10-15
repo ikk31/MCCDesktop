@@ -1,0 +1,30 @@
+﻿<Window x:Class="MCCDesktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MCCDesktop"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <DockPanel>
+        <!-- Header с логотипом и названием -->
+        <Border DockPanel.Dock="Top" Background="#6F4E37" Height="80">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!--<Image Source="" Height="50" Margin="0,0,10,0"/>-->
+                <TextBlock Text="MyCoffeeCup" FontSize="24" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Навигационное меню -->
+        <StackPanel DockPanel.Dock="Left" Width="200" Background="#F5F5F5">
+            <Button x:Name="EmployeesBtn" Content="Сотрудники" Style="{StaticResource NavButtonStyle}"/>
+            <Button x:Name="TimeTrackingBtn" Content="Учёт времени" Style="{StaticResource NavButtonStyle}"/>
+            <Button x:Name="SalariesBtn" Content="Зарплаты" Style="{StaticResource NavButtonStyle}"/>
+            <Button x:Name="WorkCalendar" Content="Календарь смен" Style="{StaticResource NavButtonStyle}"/>
+            <Button x:Name="LogoutBtn" Content="Выход" Style="{StaticResource NavButtonStyle}" Margin="0,20,0,0"/>
+        </StackPanel>
+
+        <!-- Основной контент -->
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+    </DockPanel>
+</Window>
