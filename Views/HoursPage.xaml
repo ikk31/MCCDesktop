@@ -1,0 +1,153 @@
+﻿<Page x:Class="MCCDesktop.Views.HoursPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:MCCDesktop.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="HoursPage">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок и фильтры -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+            <TextBlock Text="Учёт рабочего времени" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <!-- Период -->
+            <StackPanel Orientation="Horizontal" Margin="40,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Период:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <DatePicker x:Name="StartDatePicker" Width="120" SelectedDate="{Binding StartDate}"/>
+                <TextBlock Text="-" VerticalAlignment="Center" Margin="10,0,10,0"/>
+                <DatePicker x:Name="EndDatePicker" Width="120" SelectedDate="{Binding EndDate}"/>
+            </StackPanel>
+
+            <!-- Сотрудник -->
+            <StackPanel Orientation="Horizontal" Margin="40,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Сотрудник:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <ComboBox x:Name="EmployeeFilter" Width="200" 
+                         ItemsSource="{Binding Employees}"
+                         DisplayMemberPath="FullName"
+                         SelectedValue="{Binding SelectedEmployee}"/>
+            </StackPanel>
+
+            <Button x:Name="ApplyFilterBtn" Content="Применить" 
+                    Margin="20,0,0,0" Padding="15,5"
+                    
+                    Background="#6F4E37" Foreground="White"/>
+        </StackPanel>
+
+        <!-- Панель быстрых действий -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <Button x:Name="AddTimeRecordBtn" Content="+ Добавить запись" 
+                    Padding="15,8" Background="#6F4E37" Foreground="White"
+                    />
+            <Button x:Name="ImportDataBtn" Content="Импорт данных" 
+                    Padding="15,8" Margin="10,0,0,0" Background="#4CAF50" Foreground="White"
+                   />
+            <Button x:Name="ExportReportBtn" Content="Экспорт отчёта" 
+                    Padding="15,8" Margin="10,0,0,0" Background="#2196F3" Foreground="White"
+                   />
+            <Button x:Name="CalculateSalariesBtn" Content="Расчёт зарплат" 
+                    Padding="15,8" Margin="10,0,0,0" Background="#FF9800" Foreground="White"
+                   />
+        </StackPanel>
+
+        <!-- Таблица учёта времени -->
+        <DataGrid x:Name="TimeTrackingGrid" Grid.Row="2" 
+                 AutoGenerateColumns="False"
+                 CanUserAddRows="False"
+                 IsReadOnly="True"
+                 SelectionMode="Single"
+                 SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <!-- Дата -->
+                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="100"/>
+
+                <!-- Сотрудник -->
+                <DataGridTextColumn Header="Сотрудник" Binding="{Binding EmployeeName}" Width="180"/>
+
+                <!-- Должность -->
+                <DataGridTextColumn Header="Должность" Binding="{Binding Position}" Width="120"/>
+
+                <!-- Рабочая точка -->
+                <DataGridTextColumn Header="Рабочая точка" Binding="{Binding WorkPoint}" Width="130"/>
+                
+                <!-- Ставка на момент смены если не указано то == базовой-->
+                <DataGridTextColumn Header="Ставка" Width="130"/>
+                <!-- Время начала -->
+                <DataGridTextColumn Header="Начало" Binding="{Binding StartTime, StringFormat=hh\\:mm}" Width="80"/>
+
+                <!-- Время окончания -->
+                <DataGridTextColumn Header="Окончание" Binding="{Binding EndTime, StringFormat=hh\\:mm}" Width="80"/>
+
+                <!-- Обеденный перерыв -->
+                <DataGridTextColumn Header="Перерыв" Binding="{Binding BreakDuration, StringFormat=hh\\:mm}" Width="80"/>
+
+                <!-- Отработано часов -->
+                <DataGridTextColumn Header="Отработано" Binding="{Binding WorkedHours, StringFormat=F2}" Width="90"/>
+
+               
+
+             
+
+                <!-- Комментарий -->
+                <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}" Width="150"/>
+
+                <!-- Действия -->
+                <DataGridTemplateColumn Header="Действия" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="✏️" FontSize="12" Margin="2" 
+                                        Tag="{Binding}" 
+                                        ToolTip="Редактировать запись"
+                                        Background="Transparent" BorderThickness="0"/>
+                                <Button Content="❌" FontSize="12" Margin="2" 
+                                        Tag="{Binding}" 
+                                        ToolTip="Удалить запись"
+                                        Background="Transparent" BorderThickness="0"/>
+                                <Button Content="📋" FontSize="12" Margin="2" 
+                                        Tag="{Binding}" 
+                                        ToolTip="Копировать запись"
+                                        Background="Transparent" BorderThickness="0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Панель статистики и итогов -->
+        <Border Grid.Row="3" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" 
+                Margin="0,15,0,0" Padding="15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                <!-- Общая статистика -->
+                
+
+                <!-- Статистика по выбранному сотруднику -->
+                <StackPanel Margin="0,0,40,0">
+                    <TextBlock Text="По сотруднику:" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Часы:" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="EmployeeWorkedHours" Text="0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Средняя смена:" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="AverageShift" Text="0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Больничные:" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="SickDays" Text="0" FontWeight="SemiBold" Foreground="#FF9800"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

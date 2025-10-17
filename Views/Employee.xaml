@@ -8,7 +8,23 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Employee">
 
-    <Grid>
-        
-    </Grid>
+   
+        <Grid>
+            <ScrollViewer>
+                <WrapPanel x:Name="EmployeesPanel" Margin="10">
+                    <!-- Карточки сотрудников будут добавляться динамически -->
+                <UserControl>
+                    <Border Width="150" Height="200" Margin="10" BorderBrush="LightGray" BorderThickness="1">
+                        <StackPanel>
+                            <Image Source="{Binding PhotoPath}" Height="100" Stretch="UniformToFill"/>
+                            <TextBlock Text="{Binding FullName}" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <TextBlock Text="{Binding Position}" HorizontalAlignment="Center" Foreground="Gray"/>
+                            <Button Content="Подробнее" Margin="5" Background="#6F4E37" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+                </UserControl>
+            </WrapPanel>
+            </ScrollViewer>
+        </Grid>
+    
 </Page>

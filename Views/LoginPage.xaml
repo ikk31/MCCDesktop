@@ -13,7 +13,7 @@
             <TextBox x:Name="UsernameBox" Margin="0,0,0,10"/>
             <Label Content="Пароль"/>
             <PasswordBox x:Name="PasswordBox" Margin="0,0,0,20"/>
-            <Button Content="Войти" Click="LoginButton_Click" Background="#6F4E37" Foreground="White"/>
+            <Button Content="Войти"  Background="#6F4E37" Foreground="White"/>
             <TextBlock x:Name="ErrorText" Foreground="Red" Visibility="Collapsed" Margin="0,10,0,0"/>
         </StackPanel>
     </Grid>

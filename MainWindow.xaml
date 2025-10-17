@@ -5,26 +5,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCDesktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <DockPanel>
-        <!-- Header с логотипом и названием -->
-        <Border DockPanel.Dock="Top" Background="#6F4E37" Height="80">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!--<Image Source="" Height="50" Margin="0,0,10,0"/>-->
-                <TextBlock Text="MyCoffeeCup" FontSize="24" Foreground="White" VerticalAlignment="Center"/>
-            </StackPanel>
-        </Border>
+        Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <DockPanel>
+            <!-- Header с логотипом и названием -->
+            <Border DockPanel.Dock="Top" Background="#6F4E37" Height="80">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image Source="/Assets/SomethingImage/Logo.jpg" Height="80" Margin="0,0,10,0"/>
+                    <TextBlock Text="MyCoffeeCup" FontSize="24" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
-        <!-- Навигационное меню -->
-        <StackPanel DockPanel.Dock="Left" Width="200" Background="#F5F5F5">
-            <Button x:Name="EmployeesBtn" Content="Сотрудники" Style="{StaticResource NavButtonStyle}"/>
-            <Button x:Name="TimeTrackingBtn" Content="Учёт времени" Style="{StaticResource NavButtonStyle}"/>
-            <Button x:Name="SalariesBtn" Content="Зарплаты" Style="{StaticResource NavButtonStyle}"/>
-            <Button x:Name="WorkCalendar" Content="Календарь смен" Style="{StaticResource NavButtonStyle}"/>
-            <Button x:Name="LogoutBtn" Content="Выход" Style="{StaticResource NavButtonStyle}" Margin="0,20,0,0"/>
-        </StackPanel>
+            <!-- Навигационное меню с анимацией -->
+            <Border x:Name="NavPanel" DockPanel.Dock="Left" Background="#F5F5F5" Width="200">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="NavPanelTransform"/>
+                </Border.RenderTransform>
+                <StackPanel>
+                    <Button x:Name="EmployeesBtn" Content="Сотрудники" Style="{StaticResource NavButtonStyle}" Click="EmployeesBtn_Click"/>
+                    <Button x:Name="TimeTrackingBtn" Content="Учёт рабочего времени" Style="{StaticResource NavButtonStyle}" Width="213" Click="TimeTrackingBtn_Click"/>
+                    <Button x:Name="SalariesBtn" Content="Зарплаты" Style="{StaticResource NavButtonStyle}" Click="SalariesBtn_Click"/>
+                    <Button x:Name="WorkCalendar" Content="Календарь смен" Style="{StaticResource NavButtonStyle}" Click="WorkCalendar_Click"/>
+                    <Button x:Name="ListBtn" Content="Списки" Style="{StaticResource NavButtonStyle}"/>
+                    <Button x:Name="LogoutBtn" Content="Выход" Style="{StaticResource NavButtonStyle}" Margin="0,20,0,0"/>
+                </StackPanel>
+            </Border>
 
-        <!-- Основной контент -->
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
-    </DockPanel>
+            <!-- Основной контент -->
+            <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+        </DockPanel>
+
+        <!-- Плавающая кнопка переключения -->
+        <Button x:Name="TogglePanelBtn" 
+                Content="☰" FontSize="16" Width="40" Height="40" 
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Margin="10" Padding="0"
+                Background="White" BorderBrush="#6F4E37" BorderThickness="2"
+                Foreground="#6F4E37" FontWeight="Bold"
+                Click="TogglePanelBtn_Click"
+                Panel.ZIndex="1000">
+            <Button.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+            </Button.Effect>
+        </Button>
+    </Grid>
 </Window>
