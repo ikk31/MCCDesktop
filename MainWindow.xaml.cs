@@ -57,7 +57,7 @@ namespace MCCDesktop
 
         private void EmployeesBtn_Click(object sender, RoutedEventArgs e)
         {
-            MainFrame.Navigate(new Employee());
+            MainFrame.Navigate(new EmployeePage());
         }
 
         private void WorkCalendar_Click(object sender, RoutedEventArgs e)

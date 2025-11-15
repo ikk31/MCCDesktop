@@ -57,12 +57,7 @@
             <Button x:Name="ExportPayslipsBtn" Content="📄 Экспорт ведомостей" 
                     Padding="15,8" Margin="10,0,0,0" Background="#4CAF50" Foreground="White"
                     />
-            <Button x:Name="SendToBankBtn" Content="🏦 Выгрузка в банк" 
-                    Padding="15,8" Margin="10,0,0,0" Background="#9C27B0" Foreground="White"
-                   />
-            <Button x:Name="AddBonusBtn" Content="💰 Начислить премию" 
-                    Padding="15,8" Margin="10,0,0,0" Background="#FF9800" Foreground="White"
-                    />
+           
             <Button x:Name="SettingsBtn" Content="⚙️ Настройки" 
                     Padding="15,8" Margin="10,0,0,0" Background="#607D8B" Foreground="White"
                     />
@@ -78,7 +73,7 @@
                  RowDetailsVisibilityMode="VisibleWhenSelected">
             <DataGrid.Columns>
                 <!-- Сотрудник -->
-                <DataGridTextColumn Header="Сотрудник" Binding="{Binding EmployeeName}" Width="180"/>
+                <DataGridTextColumn Header="Сотрудник" Binding="{Binding Name}" Width="180"/>
 
                 <!-- Должность -->
                 <DataGridTextColumn Header="Должность" Binding="{Binding Position}" Width="120"/>
@@ -249,60 +244,6 @@
         </DataGrid>
 
         <!-- Панель итогов -->
-        <Border Grid.Row="3" Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" 
-                Margin="0,15,0,0" Padding="20">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                <!-- Общие итоги -->
-                <StackPanel Margin="0,0,40,0">
-                    <TextBlock Text="Общие итоги по фонду оплаты труда:" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Всего сотрудников:" Width="150" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TotalEmployees" Text="0" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Фонд оплаты труда:" Width="150" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TotalSalaryFund" Text="0 руб" FontWeight="SemiBold" Foreground="#2196F3"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Средняя зарплата:" Width="150" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="AverageSalary" Text="0 руб" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Налоги и отчисления -->
-                <StackPanel Margin="0,0,40,0">
-                    <TextBlock Text="Налоги и отчисления:" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="НДФЛ всего:" Width="120" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TotalIncomeTax" Text="0 руб" Foreground="#F44336"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Страховые взносы:" Width="120" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TotalInsurance" Text="0 руб" Foreground="#FF9800"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Общая нагрузка:" Width="120" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="TotalTaxBurden" Text="0 руб" FontWeight="SemiBold" Foreground="#9C27B0"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Статус выплат -->
-                <StackPanel>
-                    <TextBlock Text="Статус выплат:" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Выплачено:" Width="80" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="PaidCount" Text="0" Foreground="#4CAF50" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Ожидают:" Width="80" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="PendingCount" Text="0" Foreground="#FF9800" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Проблемы:" Width="80" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="ProblemCount" Text="0" Foreground="#F44336" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
-        </Border>
+       
     </Grid>
 </Page>
