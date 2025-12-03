@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,17 +15,19 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Net.Http;
 
 namespace MCCDesktop.Views
 {
-    
-    using System.Net.Http;
+    using MCCDesktop.HelpClass;
+    using MCCDesktop.Instruments;
+    using MCCDesktop.Models.DTOs.Request;
+    using MCCDesktop.Models.DTOs.Response;
+    using Microsoft.Win32;
+    using System.IO;
     using System.Net;
+    using System.Net.Http;
     using System.Net.Http.Json;
     using System.Threading.Tasks;
-    using MCCDesktop.Instruments;
-    using MCCDesktop.Models.DTOs.Response;
 
 
     /// <summary>
@@ -40,21 +43,35 @@ namespace MCCDesktop.Views
             _apiClient = new ();
             _employees = [];
             GetAllEmployees();
+            
         }
 
         public async void GetAllEmployees()
         {
+            DataStorage.CachePhoto.Clear();
             _employees = await _apiClient.GetAllEmployees();
             EmployeesItemsControl.ItemsSource = _employees;
+            
         }
 
       
 
         private void InfoEmployee_Click(object sender, RoutedEventArgs e)
         {
-            var employeeInfoWindow = new EmployeeInfoWindow((sender as Button)!.DataContext as AllEmployees);
-            employeeInfoWindow.Show();
+            var image = (sender as Image);
+            var employeeInfoWindow = new EmployeeInfoWindow((sender as Button)!.DataContext as AllEmployees); 
+
+            employeeInfoWindow.ShowDialog();
+            GetAllEmployees();
         }
+
+        private void AddEmployeeButton_Click(object sender, RoutedEventArgs e)
+        {
+            EmployeeInfoWindow employeeInfoWindow = new EmployeeInfoWindow();
+            employeeInfoWindow.ShowDialog();
+            GetAllEmployees();
+        }
+   
     }
 }
 

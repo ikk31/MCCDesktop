@@ -74,5 +74,10 @@ namespace MCCDesktop
         {
             MainFrame.Navigate(new SalariesPage());
         }
+
+        private void LogoutBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

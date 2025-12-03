@@ -1,9 +1,11 @@
 ﻿<Application x:Class="MCCDesktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MCCDesktop"
+             xmlns:local="clr-namespace:MCCDesktop" 
+             xmlns:local1="clr-namespace:MCCDesktop.HelpClass"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        
         <!-- Стиль для кнопок навигации -->
         <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>

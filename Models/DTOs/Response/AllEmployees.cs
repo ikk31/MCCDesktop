@@ -13,5 +13,21 @@ namespace MCCDesktop.Models.DTOs.Response
         public string? LastName { get; set; }
         public string? PhotoPath { get; set; }
         public bool? IsDelete { get; set; }
+        public string FullName
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(Name)) parts.Add(Name);
+                if (!string.IsNullOrEmpty(LastName)) parts.Add(LastName);
+                return string.Join(" ", parts);
+            }
+        }
+
     }
+
+
+  
+
+
 }

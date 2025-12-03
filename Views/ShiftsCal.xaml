@@ -3,12 +3,16 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:MCCDesktop.Views"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="ShiftsCal">
+      d:DesignHeight="700" d:DesignWidth="1000"
+      Title="Календарь смен">
 
-    <Grid Margin="20">
+    <!-- Добавьте ресурсы на уровне страницы -->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Page.Resources>
+
+    <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,14 +20,16 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Заголовок и навигация по месяцам -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+        <!-- Заголовок и навигация -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
             <Button x:Name="PrevMonthBtn" Content="◀" FontSize="16" Width="30" Height="30" 
-                    Background="Transparent" BorderThickness="0"/>
-            <TextBlock x:Name="MonthYearText" Text="Январь 2024" FontSize="20" FontWeight="Bold" 
+                    Background="Transparent" BorderThickness="0" Cursor="Hand"/>
+
+            <TextBlock x:Name="MonthYearText" Text="Январь 2024" FontSize="22" FontWeight="Bold" 
                        Margin="20,0" VerticalAlignment="Center"/>
+
             <Button x:Name="NextMonthBtn" Content="▶" FontSize="16" Width="30" Height="30" 
-                     Background="Transparent" BorderThickness="0"/>
+                    Background="Transparent" BorderThickness="0" Cursor="Hand"/>
         </StackPanel>
 
         <!-- Дни недели -->
@@ -37,16 +43,31 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="Пн" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="1" Text="Вт" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="2" Text="Ср" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="3" Text="Чт" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="4" Text="Пт" FontWeight="Bold" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="5" Text="Сб" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Blue"/>
-            <TextBlock Grid.Column="6" Text="Вс" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Red"/>
+
+            <Border Grid.Column="0" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Пн" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="1" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Вт" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="2" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Ср" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="3" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Чт" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="4" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Пт" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="5" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Сб" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Blue"/>
+            </Border>
+            <Border Grid.Column="6" Background="#F5F5F5" Padding="5">
+                <TextBlock Text="Вс" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Red"/>
+            </Border>
         </Grid>
 
-        <!-- Сетка календаря -->
+        <!-- Календарь -->
         <ItemsControl x:Name="CalendarGrid" Grid.Row="2">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -55,36 +76,85 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="#DDD" BorderThickness="1" Margin="1" Background="White">
-                        <Button x:Name="DayButton" Content="{Binding Day}" 
+                    <Border BorderBrush="#E0E0E0" BorderThickness="1" Margin="0.5" Background="White">
+                        <Button x:Name="DayButton" 
                                 Tag="{Binding}"
-                                
-                                Background="Transparent" BorderThickness="0"
-                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
-                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                            BorderThickness="{TemplateBinding BorderThickness}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Top" Margin="5"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <Button.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Добавить смену"/>
-                                    <MenuItem Header="Просмотр смен" />
-                                </ContextMenu>
-                            </Button.ContextMenu>
+                                Click="DayButton_Click"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                HorizontalContentAlignment="Stretch" 
+                                VerticalContentAlignment="Stretch"
+                                Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <!-- Номер дня -->
+                                                        <TextBlock Grid.Row="0" 
+                                                                   Text="{Binding Day}" 
+                                                                   HorizontalAlignment="Left"
+                                                                   Margin="5,5,0,0"
+                                                                   FontWeight="SemiBold"/>
+
+                                                        <!-- Индикатор смен -->
+                                                        <StackPanel Grid.Row="1" 
+                                                                   VerticalAlignment="Bottom"
+                                                                   Margin="5"
+                                                                   Orientation="Vertical"
+                                                                   >
+                                                            <Ellipse Width="6" Height="6" 
+                                                                     Fill="#4CAF50" 
+                                                                     HorizontalAlignment="Left"
+                                                                     Visibility="{Binding HasShifts, Converter={StaticResource BoolToVis}}"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                            <Setter Property="BorderBrush" Value="#2196F3"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsEmpty}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter Property="Background" Value="#FAFAFA"/>
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                         </Button>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- Панель информации о выбранном дне -->
-        <Border Grid.Row="3" Background="#F5F5F5" BorderBrush="#CCC" BorderThickness="1" 
-                Margin="0,20,0,0" Padding="15" Visibility="Collapsed" x:Name="DayInfoPanel">
+        <!-- Информация о выбранном дне -->
+        <Border Grid.Row="3" 
+                Background="White" 
+                BorderBrush="#E0E0E0" 
+                BorderThickness="0,2,0,0"
+                Margin="0,20,0,0" 
+                Padding="15" 
+                Visibility="Collapsed" 
+                x:Name="DayInfoPanel">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -92,43 +162,146 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock x:Name="SelectedDateText" Grid.Row="0" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <!-- Заголовок дня -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                    <TextBlock x:Name="SelectedDateText" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock Text=" • " VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ShiftCountText" Text="0 смен" Foreground="#666"/>
+                </StackPanel>
 
-                <ScrollViewer Grid.Row="1" MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                <!-- Список смен по рабочим точкам -->
+                <ScrollViewer Grid.Row="1" 
+                             VerticalScrollBarVisibility="Auto" 
+                             MaxHeight="300"
+                             Padding="5">
                     <ItemsControl x:Name="ShiftsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="#DDD" BorderThickness="0,0,0,1" Padding="0,5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding EmployeeName}" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding WorkPoint}" Foreground="#666" FontSize="12"/>
-                                            <TextBlock Text="{Binding TimeRange}" Foreground="#666" FontSize="12"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                            <Button Content="✏️" FontSize="12" Margin="2" 
-                                                    Tag="{Binding}" 
-                                                    ToolTip="Редактировать смену"/>
-                                            <Button Content="❌" FontSize="12" Margin="2" 
-                                                    Tag="{Binding}" 
-                                                    ToolTip="Удалить смену"/>
-                                        </StackPanel>
-                                    </Grid>
+                                <Border BorderBrush="#E0E0E0" 
+                                        BorderThickness="0,0,0,1" 
+                                        Margin="0,0,0,10"
+                                        Padding="0,0,0,10">
+                                    <StackPanel>
+                                        <!-- Название рабочей точки -->
+                                        <TextBlock Text="{Binding WorkplaceName}" 
+                                                  FontWeight="Bold" 
+                                                  FontSize="16"
+                                                  Margin="0,0,0,5"
+                                                  Foreground="#2196F3"/>
+
+                                        <!-- Смены на этой точке -->
+                                        <ItemsControl ItemsSource="{Binding Shifts}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#F0F0F0" 
+                                                            BorderThickness="0,0,0,1" 
+                                                            Padding="0,8,0,8">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- Информация о смене -->
+                                                            <StackPanel Grid.Column="0">
+                                                                <TextBlock Text="{Binding EmployeeName}" 
+                                                                           FontWeight="SemiBold"/>
+
+                                                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                                    <TextBlock Text="{Binding TimeRange}" 
+                                                                               Foreground="#666"/>
+
+                                                                    <TextBlock Text=" • " Foreground="#666"/>
+
+                                                                    <TextBlock Text="{Binding WorkHours, StringFormat={}{0:F2} ч}" 
+                                                                               Foreground="#666"/>
+
+                                                                    <TextBlock Text=" • " Foreground="#666"/>
+
+                                                                    <TextBlock Text="{Binding HourlyRate, StringFormat={}Ставка: {0} руб/ч}" 
+                                                                               Foreground="#666"/>
+                                                                </StackPanel>
+
+                                                                <!-- Комментарий (если есть) -->
+                                                                <TextBlock Text="{Binding Notes}" 
+                                                                           FontStyle="Italic"
+                                                                           Foreground="#888"
+                                                                           Margin="0,3,0,0"
+                                                                           TextWrapping="Wrap">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            <Style.Triggers>
+                                                                                <Trigger Property="Text" Value="">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </Trigger>
+                                                                                <Trigger Property="Text" Value="">
+                                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                                </Trigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </StackPanel>
+
+                                                            <!-- Кнопки действий -->
+                                                            <StackPanel Grid.Column="1" 
+                                                                       Orientation="Horizontal"
+                                                                       VerticalAlignment="Center">
+                                                                <Button Content="✏️" 
+                                                                        FontSize="12" 
+                                                                        Margin="2"
+                                                                        Tag="{Binding}"
+                                                                        Click="EditShift_Click"
+                                                                        ToolTip="Редактировать смену"
+                                                                        Background="Transparent" 
+                                                                        BorderThickness="0"
+                                                                        Cursor="Hand"/>
+
+                                                                <Button Content="🗑️" 
+                                                                        FontSize="12" 
+                                                                        Margin="2"
+                                                                        Tag="{Binding}"
+                                                                        Click="DeleteShift_Click"
+                                                                        ToolTip="Удалить смену"
+                                                                        Background="Transparent" 
+                                                                        BorderThickness="0"
+                                                                        Cursor="Hand"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- Итого по рабочей точке -->
+                                        <Border Background="#F9F9F9" 
+                                                Margin="0,5,0,0" 
+                                                Padding="5"
+                                                CornerRadius="3">
+                                            <TextBlock Text="{Binding Shifts.Count, StringFormat={}Всего смен: {0}}"
+                                                      FontSize="12"
+                                                      Foreground="#666"/>
+                                        </Border>
+                                    </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
 
-                <Button x:Name="AddShiftBtn" Grid.Row="2" Content="+ Добавить смену" 
-                        HorizontalAlignment="Left" Margin="0,10,0,0"
-                         Background="#6F4E37" Foreground="White"/>
+                <!-- Кнопка добавления смены -->
+                <Button x:Name="AddShiftBtn" 
+                       Grid.Row="2" 
+                       Content="+ Добавить смену на этот день" 
+                       HorizontalAlignment="Stretch" 
+                       Margin="0,15,0,0"
+                       Padding="12,6"
+                       Click="AddShiftBtn_Click"
+                       Background="#6F4E37" 
+                       Foreground="White"
+                       FontWeight="SemiBold"/>
             </Grid>
         </Border>
     </Grid>
-    
 </Page>

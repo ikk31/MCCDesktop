@@ -4,11 +4,12 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:MCCDesktop.Views"
+      xmlns:Instruments="clr-namespace:MCCDesktop.Views"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="SalariesPage">
 
-    <Grid Margin="20">
+    <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,234 +17,222 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Заголовок и период -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,20">
-            <TextBlock Text="Расчёт зарплат" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" Text="💰 Расчет зарплат" 
+                  FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <!-- Период расчёта -->
-            <StackPanel Orientation="Horizontal" Margin="40,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="Расчётный период:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
-                <ComboBox x:Name="PeriodComboBox" Width="150" SelectedIndex="0">
-                    <ComboBoxItem Content="Текущий месяц"/>
-                    <ComboBoxItem Content="Прошлый месяц"/>
-                    <ComboBoxItem Content="Квартал"/>
-                    <ComboBoxItem Content="Произвольный период"/>
-                </ComboBox>
+        <!-- Панель выбора периода -->
+        <Border Grid.Row="1" Background="#F5F5F5" Padding="15" CornerRadius="5" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="Выберите период для расчета:" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                <DatePicker x:Name="CustomStartDate" Width="120" Margin="20,0,0,0" 
-                           Visibility="Collapsed" SelectedDate="{Binding CustomStartDate}"/>
-                <TextBlock Text="-" VerticalAlignment="Center" Margin="5,0,5,0" 
-                          Visibility="{Binding ElementName=CustomStartDate, Path=Visibility}"/>
-                <DatePicker x:Name="CustomEndDate" Width="120" 
-                           Visibility="Collapsed" SelectedDate="{Binding CustomEndDate}"/>
-            </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- Статус расчёта -->
-            <Border Background="#E8F5E8" BorderBrush="#4CAF50" BorderThickness="1" 
-                    CornerRadius="3" Padding="10,5" Margin="40,0,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse Width="10" Height="10" Fill="#4CAF50" Margin="0,0,5,0"/>
-                    <TextBlock Text="Зарплаты рассчитаны" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                    <TextBlock x:Name="CalculationDate" Text="01.11.2024" Margin="10,0,0,0" Foreground="#666"/>
+                    <TextBlock Grid.Column="0" Text="Сотрудник:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ComboBox Grid.Column="1" x:Name="EmployeeComboBox" 
+             DisplayMemberPath="FullName" Width="250" Margin="0,0,20,0"/>
+
+                    <!-- ПЕРИОД С -->
+                    <TextBlock Grid.Column="2" Text="Период с:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <DatePicker Grid.Column="3" x:Name="StartDatePicker" 
+               Width="120" Margin="0,0,10,0"/>
+
+                    <!-- ПО КАКОЙ ДЕНЬ (включительно) -->
+                    <TextBlock Grid.Column="4" Text="по (включительно):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <DatePicker Grid.Column="5" x:Name="EndDatePicker" 
+               Width="120" Margin="0,0,20,0"/>
+
+                    <Button Grid.Column="6" x:Name="CalculateBtn" Content="Рассчитать" 
+           Padding="12,6" Background="#2196F3" Foreground="White" FontWeight="SemiBold"/>
+                </Grid>
+
+                <!-- Пояснение под периодом -->
+                <TextBlock Text="Будут учтены все смены и авансы с начальной даты по конечную дату включительно" 
+                          FontSize="11" Foreground="#666" Margin="0,5,0,0" FontStyle="Italic"/>
+
+                <!-- Кнопки быстрого выбора -->
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button x:Name="TodayBtn" Content="Сегодня" 
+                           Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
+                           />
+                    <Button x:Name="YesterdayBtn" Content="Вчера" 
+                           Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
+                           />
+                    <Button x:Name="ThisMonthBtn" Content="Весь месяц" 
+                           Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
+                           />
+                    <Button x:Name="LastMonthBtn" Content="Прошлый месяц" 
+                           Padding="8,4" Background="#E0E0E0"
+                           />
                 </StackPanel>
-            </Border>
-        </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <!-- Панель действий -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-            <Button x:Name="CalculateSalariesBtn" Content="🔄 Рассчитать зарплаты" 
-                    Padding="15,8" Background="#2196F3" Foreground="White" FontWeight="SemiBold"
-                   />
-            <Button x:Name="ExportPayslipsBtn" Content="📄 Экспорт ведомостей" 
-                    Padding="15,8" Margin="10,0,0,0" Background="#4CAF50" Foreground="White"
-                    />
-           
-            <Button x:Name="SettingsBtn" Content="⚙️ Настройки" 
-                    Padding="15,8" Margin="10,0,0,0" Background="#607D8B" Foreground="White"
-                    />
-        </StackPanel>
+        <!-- Результаты расчета -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-        <!-- Таблица зарплат -->
-        <DataGrid x:Name="SalariesGrid" Grid.Row="2" 
-                 AutoGenerateColumns="False"
-                 CanUserAddRows="False"
-                 IsReadOnly="True"
-                 SelectionMode="Single"
-                 SelectionUnit="FullRow"
-                 RowDetailsVisibilityMode="VisibleWhenSelected">
-            <DataGrid.Columns>
-                <!-- Сотрудник -->
-                <DataGridTextColumn Header="Сотрудник" Binding="{Binding Name}" Width="180"/>
+                <!-- Сводка -->
+                <Border Grid.Row="0" Background="#E8F5E8" Padding="15" BorderBrush="#C8E6C9" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                <!-- Должность -->
-                <DataGridTextColumn Header="Должность" Binding="{Binding Position}" Width="120"/>
+                        <!-- Информация -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="EmployeeInfoText" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock x:Name="PeriodInfoText" Margin="0,5,0,0" Foreground="#666"/>
+                            <TextBlock x:Name="PeriodRangeText" Margin="0,2,0,0" FontSize="12" Foreground="#888"/>
+                        </StackPanel>
 
-                <!-- Оклад -->
-                <DataGridTextColumn Header="Оклад" Binding="{Binding BaseSalary, StringFormat=N0}" Width="90"/>
-
-                <!-- Отработано часов -->
-                <DataGridTextColumn Header="Часы" Binding="{Binding WorkedHours, StringFormat=F1}" Width="70"/>
-
-                <!-- Премии -->
-                <DataGridTextColumn Header="Премии" Binding="{Binding Bonuses, StringFormat=N0}" Width="90">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="#4CAF50"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Штрафы -->
-                <DataGridTextColumn Header="Штрафы" Binding="{Binding Penalties, StringFormat=N0}" Width="90">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="#F44336"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Аванс -->
-                <DataGridTextColumn Header="Аванс" Binding="{Binding AdvancePayment, StringFormat=N0}" Width="90">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="#FF9800"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- НДФЛ -->
-                <DataGridTextColumn Header="НДФЛ" Binding="{Binding IncomeTax, StringFormat=N0}" Width="80"/>
-
-                <!-- К выплате -->
-                <DataGridTextColumn Header="К выплате" Binding="{Binding TotalToPay, StringFormat=N0}" Width="110">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="#2196F3"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-
-                <!-- Статус -->
-                <DataGridTemplateColumn Header="Статус" Width="100">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Border Padding="5,2" CornerRadius="3" 
-                                    Background="{Binding StatusColor}">
-                                <TextBlock Text="{Binding Status}" 
-                                          HorizontalAlignment="Center" 
-                                          Foreground="White" FontWeight="SemiBold"/>
+                        <!-- Суммы -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Border Background="White" Padding="10,5" Margin="0,0,10,0" CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock Text="Смен" FontSize="11" Foreground="#666"/>
+                                    <TextBlock x:Name="ShiftCountText" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                </StackPanel>
                             </Border>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
 
-                <!-- Действия -->
-                <DataGridTemplateColumn Header="Действия" Width="120">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="👁️" FontSize="12" Margin="2" 
-                                        Tag="{Binding}" 
-                                        ToolTip="Детали расчёта"
-                                        Background="Transparent" BorderThickness="0"/>
-                                <Button Content="📋" FontSize="12" Margin="2" 
-                                        Tag="{Binding}" 
-                                        ToolTip="Сформировать ведомость"
-                                        Background="Transparent" BorderThickness="0"/>
-                                <Button Content="✏️" FontSize="12" Margin="2" 
-                                        Tag="{Binding}" 
-                                        ToolTip="Корректировка"
-                                        Background="Transparent" BorderThickness="0"/>
+                            <Border Background="White" Padding="10,5" Margin="0,0,10,0" CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock Text="Часы" FontSize="11" Foreground="#666"/>
+                                    <TextBlock x:Name="TotalHoursText" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#F1F8E9" Padding="10,5" Margin="0,0,10,0" CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock Text="Заработок" FontSize="11" Foreground="#666"/>
+                                    <TextBlock x:Name="TotalEarningsText" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#FFF3E0" Padding="10,5" Margin="0,0,10,0" CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock Text="Авансы" FontSize="11" Foreground="#666"/>
+                                    <TextBlock x:Name="TotalAdvancesText" FontSize="16" FontWeight="Bold" Foreground="#FF9800"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#E3F2FD" Padding="10,5" CornerRadius="5">
+                                <StackPanel>
+                                    <TextBlock Text="К выплате" FontSize="11" Foreground="#666" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="NetAmountText" FontSize="18" FontWeight="Bold" Foreground="#1976D2"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Детализация -->
+                <TabControl Grid.Row="1">
+                    <TabItem Header="📋 Смены">
+                        <DataGrid x:Name="ShiftsDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat={}{0:dd.MM.yyyy}}" Width="100"/>
+                                <DataGridTextColumn Header="Рабочая точка" Binding="{Binding WorkplaceName}" Width="150"/>
+                                <DataGridTextColumn Header="Время" Width="120">
+                                    <DataGridTextColumn.Binding>
+                                        <MultiBinding StringFormat="{}{0:hh\:mm} - {1:hh\:mm}">
+                                            <Binding Path="StartTime"/>
+                                            <Binding Path="EndTime"/>
+                                        </MultiBinding>
+                                    </DataGridTextColumn.Binding>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Часы" Binding="{Binding WorkHours, StringFormat={}{0:F2} ч}" Width="80"/>
+                                <DataGridTextColumn Header="Ставка" Binding="{Binding HourlyRate, StringFormat={}{0} ₽/ч}" Width="100"/>
+                                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalEarned, StringFormat={}{0:F2} ₽}" Width="120"/>
+                                <DataGridTextColumn Header="Комментарий" Binding="{Binding Notes}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="💵 Авансы">
+                        <DataGrid x:Name="AdvancesDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Дата" Binding="{Binding AdvanceDate, StringFormat={}{0:dd.MM.yyyy}}" Width="100"/>
+                                <DataGridTextColumn Header="Сумма" Binding="{Binding Amount, StringFormat={}{0:F2} ₽}" Width="120"/>
+                                <DataGridTextColumn Header="Комментарий" Binding="{Binding Notes}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="📄 Создать выплату">
+                        <Border Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="Создать выплату на основе расчета:" 
+                                          FontWeight="Bold" FontSize="16" Margin="0,0,0,20"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Период:" 
+                                              VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="PayoutPeriodText" 
+                                              FontWeight="Bold" Margin="0,0,0,10"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Название:" 
+                                              VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="PeriodNameTextBox" 
+                                            Width="300" Margin="0,0,0,10"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Дата выплаты:" 
+                                              VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <DatePicker Grid.Row="2" Grid.Column="1" x:Name="PaymentDatePicker" 
+                                               Width="120" Margin="0,0,0,10"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Комментарий:" 
+                                              VerticalAlignment="Top" Margin="0,0,10,10"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="NotesTextBox" 
+                                            Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                                </Grid>
+
+                                <Button x:Name="CreatePayoutBtn" Content="✅ Создать выплату" 
+                                       Margin="0,20,0,0" Padding="15,8" Width="200"
+                                       Background="#4CAF50" Foreground="White" FontWeight="SemiBold"
+                                       HorizontalAlignment="Left"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Border>
 
-            <!-- Детализация по строкам -->
-            <DataGrid.RowDetailsTemplate>
-                <DataTemplate>
-                    <Border Background="#F8F9FA" Margin="10" Padding="15" CornerRadius="5">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Начисления -->
-                            <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                                <TextBlock Text="Начисления:" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Оклад:" Width="120"/>
-                                    <TextBlock Text="{Binding BaseSalary, StringFormat=N0}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Премии:" Width="120"/>
-                                    <TextBlock Text="{Binding Bonuses, StringFormat=N0}" Foreground="#4CAF50" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Доплаты:" Width="120"/>
-                                    <TextBlock Text="{Binding AdditionalPayments, StringFormat=N0}" Foreground="#4CAF50"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Итого начислено:" Width="120"/>
-                                    <TextBlock Text="{Binding TotalAccrued, StringFormat=N0}" FontWeight="Bold"/>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <!-- Удержания -->
-                            <StackPanel Grid.Column="1" Margin="0,0,20,0">
-                                <TextBlock Text="Удержания:" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="НДФЛ 13%:" Width="120"/>
-                                    <TextBlock Text="{Binding IncomeTax, StringFormat=N0}" Foreground="#F44336"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Штрафы:" Width="120"/>
-                                    <TextBlock Text="{Binding Penalties, StringFormat=N0}" Foreground="#F44336" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Аванс:" Width="120"/>
-                                    <TextBlock Text="{Binding AdvancePayment, StringFormat=N0}" Foreground="#FF9800"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Прочие удержания:" Width="120"/>
-                                    <TextBlock Text="{Binding OtherDeductions, StringFormat=N0}" Foreground="#F44336"/>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <!-- Итоги -->
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Итоги:" FontWeight="Bold" Margin="0,0,0,10"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Отработано дней:" Width="120"/>
-                                    <TextBlock Text="{Binding WorkedDays}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Больничные:" Width="120"/>
-                                    <TextBlock Text="{Binding SickDays}" Foreground="#FF9800"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="Отпускные:" Width="120"/>
-                                    <TextBlock Text="{Binding VacationDays}" Foreground="#2196F3"/>
-                                </StackPanel>
-                                <Rectangle Height="1" Fill="#DDD" Margin="0,10,0,10"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,2">
-                                    <TextBlock Text="К выплате:" Width="120" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding TotalToPay, StringFormat=N0}" FontWeight="Bold" Foreground="#2196F3" FontSize="14"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </DataGrid.RowDetailsTemplate>
-        </DataGrid>
-
-        <!-- Панель итогов -->
-       
+        <!-- Статус -->
+        <Border Grid.Row="3" Background="#FFF3E0" Margin="0,10,0,0" Padding="10" CornerRadius="5">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="StatusText" Text="Выберите сотрудника и период для расчета" VerticalAlignment="Center"/>
+                <Button x:Name="RefreshBtn" Content="🔄" 
+                       Margin="10,0,0,0" Padding="5"
+                       Background="Transparent" BorderThickness="0"
+                       Cursor="Hand" ToolTip="Обновить"
+                       />
+            </StackPanel>
+        </Border>
     </Grid>
 </Page>

@@ -4,9 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCDesktop.Views"
+        xmlns:Instruments="clr-namespace:MCCDesktop.HelpClass"
         mc:Ignorable="d"
         Title="EmployeeInfoWindow" Height="450" Width="800">
     <Window.Resources>
+        <Instruments:DateConverter x:Key="DateConverter"/>
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
@@ -28,6 +30,8 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#cccccc"/>
         </Style>
+        
+        
     </Window.Resources>
 
     <Grid Margin="20">
@@ -53,6 +57,7 @@
                 <Border Background="#80000000" 
                         VerticalAlignment="Bottom"
                         Height="30">
+                    <Button Name ="AddPhoto" Content="Добавить новое фото" Click="AddPhoto_Click"/>
                 </Border>
             </Grid>
         </Border>
@@ -103,9 +108,12 @@
                 <TextBlock Grid.Column="0" 
                           Text="Должность:" 
                           FontWeight="SemiBold"/>
-                <TextBox Grid.Column="1" 
+                <ComboBox Grid.Column="1" 
                         x:Name="PositionTextBox"
-                        />
+                        SelectedValue="{Binding IdJobTitle}" 
+                         DisplayMemberPath="Name"
+                         SelectedValuePath="IdJobTitle"
+                         />
             </Grid>
 
             <!-- Дата устройства -->
@@ -119,8 +127,11 @@
                           FontWeight="SemiBold"/>
                 <DatePicker Grid.Column="1" 
                            x:Name="HireDatePicker"
-                           SelectedDate=""
-                           DisplayDateStart="2000-01-01"/>
+                           SelectedDate="{Binding HireDate,Converter={StaticResource DateConverter}}"
+                           DisplayDateStart="2000-01-01"
+                            Focusable="False"            
+                            />
+                
             </Grid>
 
             <!-- Кнопки -->
@@ -136,7 +147,7 @@
                         BorderThickness="0"
                         FontWeight="SemiBold"
                         Margin="0,0,10,0"
-                        />
+                        Click="SaveButton_Click"/>
 
                 <Button x:Name="CloseButton" 
                         Content="Закрыть" 
@@ -146,7 +157,7 @@
                         Foreground="White"
                         BorderThickness="0"
                         FontWeight="SemiBold"
-                        />
+                        Click="CloseButton_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>
