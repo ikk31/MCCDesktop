@@ -62,7 +62,7 @@ namespace MCCDesktop.Views
                 _employees = await employeesTask ?? new List<AllEmployees>();
 
                 // Заполняем комбо-бокс сотрудников
-                EmployeeFilter.ItemsSource = _employees;
+                EmployeeFilter.ItemsSource = _employees.Where(x => x.IsDelete == false);
                 EmployeeFilter.DisplayMemberPath = "FullName";
 
                 // Применяем фильтры
@@ -92,10 +92,7 @@ namespace MCCDesktop.Views
         {
             try
             {
-                // Копируем все смены для фильтрации
                 _filteredShifts = _allShifts.ToList();
-
-                // Фильтр по дате
                 if (StartDatePicker.SelectedDate.HasValue)
                 {
                     var startDate = StartDatePicker.SelectedDate.Value.Date;
@@ -104,7 +101,6 @@ namespace MCCDesktop.Views
                                DateOnly.FromDateTime(startDate) <= s.Date.Value)
                         .ToList();
                 }
-
                 if (EndDatePicker.SelectedDate.HasValue)
                 {
                     var endDate = EndDatePicker.SelectedDate.Value.Date;
@@ -113,16 +109,12 @@ namespace MCCDesktop.Views
                                DateOnly.FromDateTime(endDate) >= s.Date.Value)
                         .ToList();
                 }
-
-                // Фильтр по сотруднику
                 if (EmployeeFilter.SelectedItem is AllEmployees selectedEmployee)
                 {
                     _filteredShifts = _filteredShifts
                         .Where(s => s.IdEmployee == selectedEmployee.IdEmployee)
                         .ToList();
                 }
-
-                // Фильтр по поиску
                 if (!string.IsNullOrWhiteSpace(SearchTextBox.Text))
                 {
                     var searchText = SearchTextBox.Text.ToLower();
@@ -133,17 +125,11 @@ namespace MCCDesktop.Views
                             (s.Notes?.ToLower().Contains(searchText) ?? false))
                         .ToList();
                 }
-
-                // Сортировка по дате (сначала новые)
                 _filteredShifts = _filteredShifts
                     .OrderByDescending(s => s.Date)
                     .ThenByDescending(s => s.StartTime)
                     .ToList();
-
-                // Обновляем DataGrid
                 TimeTrackingGrid.ItemsSource = _filteredShifts;
-
-                // Обновляем статистику
                 UpdateStatistics();
             }
             catch (Exception ex)
@@ -251,16 +237,16 @@ namespace MCCDesktop.Views
         {
             using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
 
-            // Заголовок CSV
+            
             writer.WriteLine("Сотрудник;Дата;Рабочая точка;Начало;Окончание;Перерыв;Отработано часов;Ставка (руб/ч);Сумма (руб);Комментарий");
 
-            // Данные
+           
             foreach (var shift in _filteredShifts)
             {
                 var employeeName = shift.IdEmployeeNavigation?.Name ?? "Неизвестный сотрудник";
                 var workplaceName = shift.IdWorkplaceNavigation?.Name ?? "Не указано";
 
-                // Вычисляем данные
+               
                 var workHours = shift.WorkHours ??
                                (shift.ActualDuration.HasValue ? shift.ActualDuration.Value / 60.0 : 0);
                 var hourlyRate = shift.HourlyRate ?? 0;
@@ -271,7 +257,7 @@ namespace MCCDesktop.Views
                 var breakDuration = shift.BreakDuration.HasValue ?
                     TimeSpan.FromMinutes(shift.BreakDuration.Value).ToString(@"hh\:mm") : "00:00";
 
-                // Формируем строку
+            
                 var line = string.Join(";",
                     EscapeCsvField(employeeName),
                     shift.Date?.ToString("dd.MM.yyyy") ?? "",
@@ -404,20 +390,13 @@ namespace MCCDesktop.Views
         }
 
         // Поиск при вводе текста (с задержкой)
-        private System.Threading.Timer _searchTimer;
+        //private Timer _searchTimer;
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Отменяем предыдущий таймер
-            _searchTimer?.Dispose();
-
-            // Запускаем новый таймер с задержкой 500мс
-            _searchTimer = new System.Threading.Timer(_ =>
-            {
                 Dispatcher.Invoke(() =>
                 {
                     ApplyFilters();
                 });
-            }, null, 500, System.Threading.Timeout.Infinite);
         }
 
         // Метод для получения полного имени сотрудника

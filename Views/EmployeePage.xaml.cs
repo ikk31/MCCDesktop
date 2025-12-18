@@ -50,7 +50,7 @@ namespace MCCDesktop.Views
         {
             DataStorage.CachePhoto.Clear();
             _employees = await _apiClient.GetAllEmployees();
-            EmployeesItemsControl.ItemsSource = _employees;
+            EmployeesItemsControl.ItemsSource = _employees.Where(x => x.IsDelete == false);
             
         }
 

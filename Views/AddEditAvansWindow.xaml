@@ -1,0 +1,76 @@
+﻿<Window x:Class="MCCDesktop.Views.AddEditAvansWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MCCDesktop.Views"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Title="AddEditAvansWindow" Height="350" Width="350">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Поле "Сотрудник" -->
+        <TextBlock Grid.Row="0" 
+                   Text="Сотрудник:" 
+                   Margin="0,0,0,5"/>
+
+        <ComboBox Grid.Row="1" 
+                  x:Name="EmployeeComboBox"
+                  Height="30"
+                  Margin="0,0,0,15">
+            <ComboBoxItem>Иванов И.И.</ComboBoxItem>
+            <ComboBoxItem>Петров П.П.</ComboBoxItem>
+            <ComboBoxItem>Сидорова А.С.</ComboBoxItem>
+        </ComboBox>
+
+        <!-- Поле "Сумма" -->
+        <TextBlock Grid.Row="2" 
+                   Text="Сумма:" 
+                   Margin="0,0,0,5"/>
+
+        <TextBox Grid.Row="3" 
+                 x:Name="AmountTextBox"
+                 Height="30"
+                 Margin="0,0,0,20"/>
+
+        <!-- Поле "Дата" -->
+        <TextBlock Grid.Row="3" 
+                   Text="Дата:" 
+                   Margin="0,30,0,5"
+                   VerticalAlignment="Bottom"/>
+
+        <DatePicker Grid.Row="4" 
+                    x:Name="DatePicker"
+                    Height="30"
+                    VerticalAlignment="Top"
+            SelectedDateFormat="Short"
+                    Focusable="False"/>
+                    
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="4" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+            <Button x:Name="CancelButton" 
+                    Content="Отмена"
+                    Width="80"
+                    Margin="0,0,10,0"
+                    />
+
+            <Button x:Name="AddButton" 
+                    Content="Добавить" 
+                    Width="80"
+                    Background="#FF2D89EF"
+                    Foreground="White"
+                    />
+        </StackPanel>
+    </Grid>
+</Window>

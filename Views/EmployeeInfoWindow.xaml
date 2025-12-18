@@ -149,6 +149,17 @@
                         Margin="0,0,10,0"
                         Click="SaveButton_Click"/>
 
+                <Button x:Name="DeleteBtn" 
+Content="Удалить" 
+Width="100" 
+Height="35"
+Background="#DC143C" 
+Foreground="White"
+BorderThickness="0"
+FontWeight="SemiBold"
+Click="DeleteBtn_Click"
+                        Margin="0,0,10,0"/>
+                
                 <Button x:Name="CloseButton" 
                         Content="Закрыть" 
                         Width="100" 
@@ -157,7 +168,10 @@
                         Foreground="White"
                         BorderThickness="0"
                         FontWeight="SemiBold"
-                        Click="CloseButton_Click"/>
+                        Click="CloseButton_Click"
+                         />
+                
+                
             </StackPanel>
         </StackPanel>
     </Grid>

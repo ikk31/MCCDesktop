@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:MCCDesktop" 
              xmlns:local1="clr-namespace:MCCDesktop.HelpClass"
-             StartupUri="MainWindow.xaml">
+             StartupUri="/Views/LoginPage.xaml">
     <Application.Resources>
         
         <!-- Стиль для кнопок навигации -->

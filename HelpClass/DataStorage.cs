@@ -12,6 +12,9 @@ namespace MCCDesktop.HelpClass
         //public static readonly Dictionary<string, BitmapImage> _cache = new Dictionary<string, BitmapImage>();
         public static Dictionary<string, BitmapImage> CachePhoto {  get; set; } = new Dictionary<string, BitmapImage>();
 
+        public static string? RoleName { get; set; }
+        public static string? Token { get; set; }
+
 
     }
 }

@@ -127,6 +127,25 @@ namespace MCCDesktop.Views
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (PositionTextBox.SelectedItem is not JobTitleEmployee selectedJobTitle)
+            {
+                MessageBox.Show("Заполните все поля!");
+                return;
+            }
+            if (!HireDatePicker.SelectedDate.HasValue)
+            {
+                MessageBox.Show("Заполните все поля!");
+                return;
+            }
+            var addEmployees = new ThisEmployee
+            {
+                Name = _employee.Name,
+                LastName = _employee.LastName,
+                HireDate = DateOnly.FromDateTime(HireDatePicker.SelectedDate.Value),
+                IdJobTitle = selectedJobTitle.IdJobTitle,
+                IsDelete = false
+
+            };
             if (string.IsNullOrEmpty(FirstNameTextBox.Text) ||
           string.IsNullOrEmpty(LastNameTextBox.Text))
             {
@@ -137,16 +156,22 @@ namespace MCCDesktop.Views
             SaveButton.IsEnabled = false;
             if (_employee.IdEmployee == 0)
             {
-                await _apiClient.PostEmployee(_employee, _fileDialog);
+                await _apiClient.PostEmployee(addEmployees, _fileDialog);
                 Close();
             }
-
             else
             {
                 await _apiClient.PutEmployee(_employee.IdEmployee, _employee, _fileDialog);
                 Close();
             }
                 SaveButton.IsEnabled = true;
+        }
+
+        private async void DeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var obj = _employee;
+            await _apiClient.DeleteEmployee(_employee.IdEmployee);
+            Close();
         }
     }
 }

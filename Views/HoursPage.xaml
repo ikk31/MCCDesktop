@@ -15,13 +15,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- Заголовок и обновление -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock Text="Учёт рабочего времени" 
                       FontSize="20" 
                       FontWeight="Bold"/>
-
             <Button x:Name="RefreshBtn" 
                     Content="Обновить" 
                     Margin="20,0,0,0" 
@@ -30,8 +27,6 @@
                     Background="#4CAF50"
                     Foreground="White"/>
         </StackPanel>
-
-        <!-- Панель фильтров -->
         <Border Grid.Row="1" 
                 Background="#F8F9FA" 
                 BorderBrush="#DEE2E6" 
@@ -45,47 +40,36 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- Фильтры по дате -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="Период:" 
                               VerticalAlignment="Center" 
                               Margin="0,0,10,0"/>
-
                     <DatePicker x:Name="StartDatePicker" 
                                Width="120" 
                                Height="28"/>
-
                     <TextBlock Text="—" 
                               VerticalAlignment="Center" 
                               Margin="5,0,5,0"/>
-
                     <DatePicker x:Name="EndDatePicker" 
                                Width="120" 
                                Height="28"/>
-
-                    <!-- Быстрые фильтры -->
                     <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
                         <Button Content="Сегодня" 
                                 Padding="8,3" 
                                 Margin="0,0,5,0"
                                 Click="QuickFilterToday_Click"
                                 ToolTip="Показать смены за сегодня"/>
-
                         <Button Content="Неделя" 
                                 Padding="8,3" 
                                 Margin="0,0,5,0"
                                 Click="QuickFilterWeek_Click"
                                 ToolTip="Показать смены за неделю"/>
-
                         <Button Content="Месяц" 
                                 Padding="8,3"
                                 Click="QuickFilterMonth_Click"
                                 ToolTip="Показать смены за месяц"/>
                     </StackPanel>
                 </StackPanel>
-
-                <!-- Фильтр по сотруднику -->
                 <StackPanel Grid.Column="1" 
                            Orientation="Horizontal" 
                            Margin="20,0,0,0">
@@ -97,8 +81,6 @@
                              Width="250" 
                              Height="28"/>
                 </StackPanel>
-
-                <!-- Кнопки фильтров -->
                 <StackPanel Grid.Column="2" 
                            Orientation="Horizontal">
                     <Button x:Name="ApplyFilterBtn" 
@@ -116,21 +98,16 @@
                 </StackPanel>
             </Grid>
         </Border>
-
-        <!-- Поиск и статистика -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
-            <!-- Поиск -->
             <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                 <TextBlock Text="Поиск:" 
                           VerticalAlignment="Center" 
                           Margin="0,0,10,0"/>
-
                 <TextBox x:Name="SearchTextBox" 
                         Width="250" 
                         Height="28"
                         Padding="5"
                         TextChanged="SearchTextBox_TextChanged"/>
-
                 <TextBlock x:Name="LoadingIndicator" 
                           Text="⏳ Загрузка..." 
                           Margin="10,0,0,0"
@@ -138,28 +115,22 @@
                           Foreground="#2196F3"
                           Visibility="Collapsed"/>
             </StackPanel>
-
-            <!-- Статистика -->
             <StackPanel Orientation="Horizontal">
                 <TextBlock x:Name="RecordCountText" 
                           Text="Найдено записей: 0" 
                           FontWeight="SemiBold"
                           Margin="0,0,20,0"/>
-
                 <TextBlock x:Name="TotalHoursText" 
                           Text="Всего часов: 0" 
                           FontWeight="SemiBold"
                           Margin="0,0,20,0"
                           Foreground="#2196F3"/>
-
                 <TextBlock x:Name="TotalAmountText" 
                           Text="Общая сумма: 0 руб" 
                           FontWeight="SemiBold"
                           Foreground="#4CAF50"/>
             </StackPanel>
         </StackPanel>
-
-        <!-- Таблица смен -->
         <DataGrid x:Name="TimeTrackingGrid" 
                  Grid.Row="3"
                  AutoGenerateColumns="False"
@@ -172,60 +143,36 @@
                  FontSize="13"
                  VerticalScrollBarVisibility="Auto"
                  HorizontalScrollBarVisibility="Auto">
-
             <DataGrid.Columns>
-                <!-- Дата -->
                 <DataGridTextColumn Header="Дата" 
                                    Binding="{Binding Date, StringFormat=dd.MM.yyyy}" 
                                    Width="100"/>
-
-                <!-- Сотрудник -->
                 <DataGridTextColumn Header="Сотрудник" 
                                    Binding="{Binding IdEmployeeNavigation.Name}" 
                                    Width="180"/>
-
-                <!-- Рабочая точка -->
                 <DataGridTextColumn Header="Рабочая точка" 
                                    Binding="{Binding IdWorkplaceNavigation.Name}" 
                                    Width="150"/>
-
-                <!-- Время начала -->
                 <DataGridTextColumn Header="Начало" 
                                    Binding="{Binding StartTime, StringFormat=hh\\:mm}" 
                                    Width="80"/>
-
-                <!-- Время окончания -->
                 <DataGridTextColumn Header="Окончание" 
                                    Binding="{Binding EndTime, StringFormat=hh\\:mm}" 
                                    Width="80"/>
-
-                <!-- Отработано часов -->
                 <DataGridTextColumn Header="Отработано" 
                                    Width="100"
                                     Binding="{Binding WorkHours}"
                                     />
-                
-
-
-                <!-- Ставка -->
                 <DataGridTextColumn Header="Ставка" 
                                    Binding="{Binding HourlyRate, StringFormat=N0}" 
                                    Width="80"/>
-
-                <!-- Сумма -->
                 <DataGridTextColumn Header="Сумма" 
                                    Width="100" Binding="{Binding TotalEarned}"/>
-
-
-
-                <!-- Комментарий -->
                 <DataGridTextColumn Header="Комментарий" 
                                    Binding="{Binding Notes}" 
                                    Width="250"/>
             </DataGrid.Columns>
         </DataGrid>
-
-        <!-- Нижняя панель -->
         <Border Grid.Row="4" 
                Background="#F5F5F5" 
                BorderBrush="#E0E0E0" 
@@ -237,8 +184,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- Экспорт -->
                 <Button x:Name="ExportReportBtn" 
                        Grid.Column="0"
                        Content="📥 Экспорт отчета" 
@@ -246,8 +191,6 @@
                        Background="#2196F3" 
                        Foreground="White"
                        FontWeight="SemiBold"/>
-
-                <!-- Статус -->
                 <TextBlock x:Name="StatusText" 
                           Grid.Column="1"
                           Text="Готово" 

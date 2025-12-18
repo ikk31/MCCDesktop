@@ -56,7 +56,7 @@ namespace MCCDesktop.Views
             Loaded += ShiftsCal_Loaded;
             PrevMonthBtn.Click += PrevMonthBtn_Click;
             NextMonthBtn.Click += NextMonthBtn_Click;
-            AddShiftBtn.Click += AddShiftBtn_Click;
+            //AddShiftBtn.Click += AddShiftBtn_Click;
         }
 
         private async void ShiftsCal_Loaded(object sender, RoutedEventArgs e)
@@ -177,7 +177,7 @@ namespace MCCDesktop.Views
             // Фильтруем смены на выбранную дату
             var dayShifts = _allShifts
                 .Where(s => s.Date.HasValue &&
-                       s.Date.Value.ToDateTime(TimeOnly.MinValue).Date == date.Date)
+                       s.Date.Value.ToDateTime(TimeOnly.MinValue).Date == date.Date && s.IsDelete == false)
                 .ToList();
 
             // Группируем по рабочим точкам
@@ -266,7 +266,7 @@ namespace MCCDesktop.Views
                     try
                     {
                         // TODO: Реализовать метод удаления в ApiClient
-                        // await _apiClient.DeleteShift(shiftItem.ShiftId);
+                        await _apiClient.DeleteShifts(shiftItem.ShiftId);
                         MessageBox.Show("Смена удалена", "Успех",
                             MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -319,5 +319,7 @@ namespace MCCDesktop.Views
                     "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+      
     }
 }

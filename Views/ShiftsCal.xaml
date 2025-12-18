@@ -259,6 +259,7 @@
                                                                         Cursor="Hand"/>
 
                                                                 <Button Content="🗑️" 
+                                                                        Name="DeleteBtn"
                                                                         FontSize="12" 
                                                                         Margin="2"
                                                                         Tag="{Binding}"
@@ -266,7 +267,8 @@
                                                                         ToolTip="Удалить смену"
                                                                         Background="Transparent" 
                                                                         BorderThickness="0"
-                                                                        Cursor="Hand"/>
+                                                                        Cursor="Hand"
+                                                                        />
                                                             </StackPanel>
                                                         </Grid>
                                                     </Border>

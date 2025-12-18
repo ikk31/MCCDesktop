@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:MCCDesktop.Views"
       xmlns:Instruments="clr-namespace:MCCDesktop.Views"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="650" d:DesignWidth="1000"
       Title="SalariesPage">
 
     <Grid Margin="15">
@@ -39,20 +39,21 @@
 
                     <TextBlock Grid.Column="0" Text="Сотрудник:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <ComboBox Grid.Column="1" x:Name="EmployeeComboBox" 
-             DisplayMemberPath="FullName" Width="250" Margin="0,0,20,0"/>
+                             DisplayMemberPath="FullName" Width="250" Margin="0,0,20,0"/>
 
                     <!-- ПЕРИОД С -->
                     <TextBlock Grid.Column="2" Text="Период с:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <DatePicker Grid.Column="3" x:Name="StartDatePicker" 
-               Width="120" Margin="0,0,10,0"/>
+                               Width="120" Margin="0,0,10,0"
+                               SelectedDateChanged="StartDatePicker_SelectedDateChanged"/>
 
                     <!-- ПО КАКОЙ ДЕНЬ (включительно) -->
                     <TextBlock Grid.Column="4" Text="по (включительно):" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <DatePicker Grid.Column="5" x:Name="EndDatePicker" 
-               Width="120" Margin="0,0,20,0"/>
+                               Width="120" Margin="0,0,20,0"/>
 
                     <Button Grid.Column="6" x:Name="CalculateBtn" Content="Рассчитать" 
-           Padding="12,6" Background="#2196F3" Foreground="White" FontWeight="SemiBold"/>
+                           Padding="12,6" Background="#2196F3" Foreground="White" FontWeight="SemiBold"/>
                 </Grid>
 
                 <!-- Пояснение под периодом -->
@@ -63,16 +64,16 @@
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                     <Button x:Name="TodayBtn" Content="Сегодня" 
                            Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
-                           />
+                           Click="TodayBtn_Click"/>
                     <Button x:Name="YesterdayBtn" Content="Вчера" 
                            Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
-                           />
+                           Click="YesterdayBtn_Click"/>
                     <Button x:Name="ThisMonthBtn" Content="Весь месяц" 
                            Padding="8,4" Margin="0,0,10,0" Background="#E0E0E0"
-                           />
+                           Click="ThisMonthBtn_Click"/>
                     <Button x:Name="LastMonthBtn" Content="Прошлый месяц" 
                            Padding="8,4" Background="#E0E0E0"
-                           />
+                           Click="LastMonthBtn_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -126,7 +127,7 @@
                             <Border Background="#FFF3E0" Padding="10,5" Margin="0,0,10,0" CornerRadius="5">
                                 <StackPanel>
                                     <TextBlock Text="Авансы" FontSize="11" Foreground="#666"/>
-                                    <TextBlock x:Name="TotalAdvancesText" FontSize="16" FontWeight="Bold" Foreground="#FF9800"/>
+                                    <TextBlock x:Name="TotalAvansText" FontSize="16" FontWeight="Bold" Foreground="#FF9800"/>
                                 </StackPanel>
                             </Border>
 
@@ -145,8 +146,8 @@
                     <TabItem Header="📋 Смены">
                         <DataGrid x:Name="ShiftsDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat={}{0:dd.MM.yyyy}}" Width="100"/>
-                                <DataGridTextColumn Header="Рабочая точка" Binding="{Binding WorkplaceName}" Width="150"/>
+                                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat='dd.MM.yyyy'}" Width="100"/>
+                                <DataGridTextColumn Header="Рабочая точка" Binding="{Binding IdWorkplaceNavigation.Name}" Width="150"/>
                                 <DataGridTextColumn Header="Время" Width="120">
                                     <DataGridTextColumn.Binding>
                                         <MultiBinding StringFormat="{}{0:hh\:mm} - {1:hh\:mm}">
@@ -155,22 +156,120 @@
                                         </MultiBinding>
                                     </DataGridTextColumn.Binding>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Часы" Binding="{Binding WorkHours, StringFormat={}{0:F2} ч}" Width="80"/>
-                                <DataGridTextColumn Header="Ставка" Binding="{Binding HourlyRate, StringFormat={}{0} ₽/ч}" Width="100"/>
-                                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalEarned, StringFormat={}{0:F2} ₽}" Width="120"/>
+                                <DataGridTextColumn Header="Часы" Binding="{Binding WorkHours, StringFormat='{}{0:F2} ч'}" Width="80"/>
+                                <DataGridTextColumn Header="Ставка" Binding="{Binding HourlyRate, StringFormat='{}{0} ₽/ч'}" Width="100"/>
+                                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalEarned, StringFormat='{}{0:F2} ₽'}" Width="120"/>
                                 <DataGridTextColumn Header="Комментарий" Binding="{Binding Notes}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
 
                     <TabItem Header="💵 Авансы">
-                        <DataGrid x:Name="AdvancesDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid x:Name="AvansDataGrid" 
+          AutoGenerateColumns="False"
+          
+          CanUserAddRows="False">
+
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Дата" Binding="{Binding AdvanceDate, StringFormat={}{0:dd.MM.yyyy}}" Width="100"/>
-                                <DataGridTextColumn Header="Сумма" Binding="{Binding Amount, StringFormat={}{0:F2} ₽}" Width="120"/>
-                                <DataGridTextColumn Header="Комментарий" Binding="{Binding Notes}" Width="*"/>
+                                <!-- ID -->
+                                <DataGridTextColumn Header="ID" 
+                           Binding="{Binding IdAvans}" 
+                           IsReadOnly="True" 
+                           Width="50"/>
+
+                                <!-- Дата -->
+                                <DataGridTextColumn Header="Дата" 
+                           Binding="{Binding Date, StringFormat='dd.MM.yyyy'}" 
+                           Width="100"/>
+
+                                <!-- Сумма -->
+                                <DataGridTextColumn Header="Сумма" 
+                           Binding="{Binding Amount, StringFormat='{}{0:F2} ₽'}" 
+                           Width="100"/>
+
+                               
+
+                                <!-- Действия -->
+                                <DataGridTemplateColumn Header="Действия" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                               
+
+                                                <!-- Кнопка удаления -->
+                                                <Button Content="Удалить" 
+                               Margin="2"
+                               Padding="5,2"
+                               Click="DeleteAvansButton_Click"
+                               Tag="{Binding IdAvans}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
+
                         </DataGrid>
+                    </TabItem>
+                    <!-- Добавляем новую вкладку в существующий TabControl -->
+                    <TabItem Header="➕ Добавить аванс">
+                        <Border Padding="20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Заголовок -->
+                                <TextBlock Grid.Row="0" Text="Добавление нового аванса" 
+                      FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                                <!-- Сотрудник -->
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Сотрудник:" Width="120" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="AddAvansEmployeeCombo" 
+                         DisplayMemberPath="FullName" 
+                         Width="250"/>
+                                </StackPanel>
+
+                                <!-- Дата аванса -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Дата аванса:" Width="120" VerticalAlignment="Center"/>
+                                    <DatePicker x:Name="AddAvansDatePicker" 
+                           Width="150" 
+                           />
+                                </StackPanel>
+
+                                <!-- Сумма аванса -->
+                                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Сумма:" Width="120" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="AddAvansAmountTextBox" 
+                        Width="150" 
+                        />
+                                    <TextBlock Text="₽" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Кнопки -->
+                                <StackPanel Grid.Row="5" Orientation="Horizontal">
+                                    <Button x:Name="AddAvansButton" 
+                       Content="💾 Сохранить аванс" 
+                       Padding="15,8" 
+                       Background="#4CAF50" 
+                       Foreground="White" 
+                       FontWeight="SemiBold"
+                       Click="AddAvansButton_Click"/>
+                                    <Button x:Name="ClearAvansFormButton" 
+                       Content="Очистить" 
+                       Padding="15,8" 
+                       Margin="10,0,0,0"
+                       Background="#E0E0E0"
+                       Click="ClearAvansFormButton_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </TabItem>
 
                     <TabItem Header="📄 Создать выплату">
@@ -215,7 +314,7 @@
                                 <Button x:Name="CreatePayoutBtn" Content="✅ Создать выплату" 
                                        Margin="0,20,0,0" Padding="15,8" Width="200"
                                        Background="#4CAF50" Foreground="White" FontWeight="SemiBold"
-                                       HorizontalAlignment="Left"/>
+                                       HorizontalAlignment="Left" Click="CreatePayoutBtn_Click"/>
                             </StackPanel>
                         </Border>
                     </TabItem>
@@ -230,8 +329,7 @@
                 <Button x:Name="RefreshBtn" Content="🔄" 
                        Margin="10,0,0,0" Padding="5"
                        Background="Transparent" BorderThickness="0"
-                       Cursor="Hand" ToolTip="Обновить"
-                       />
+                       Cursor="Hand" ToolTip="Обновить"/>
             </StackPanel>
         </Border>
     </Grid>

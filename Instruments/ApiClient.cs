@@ -1,4 +1,5 @@
-﻿using MCCDesktop.Models.DTOs.Request;
+﻿using MCCDesktop.HelpClass;
+using MCCDesktop.Models.DTOs.Request;
 using MCCDesktop.Models.DTOs.Response;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Shapes;
-
+using System.Net.Http.Headers;
 namespace MCCDesktop.Instruments
 {
     public class ApiClient
@@ -28,7 +29,9 @@ namespace MCCDesktop.Instruments
         public ApiClient() 
         {
             _httpClient = createClientWithoutCert();
-            _httpClient.BaseAddress = new Uri("https://192.168.0.158:7106/");
+            _httpClient.BaseAddress = new Uri("https://192.168.0.200:7106/");
+            if (!string.IsNullOrEmpty(DataStorage.Token))
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", DataStorage.Token);
         }
         public async Task<List<AllEmployees>> GetAllEmployees()
         {
@@ -108,7 +111,7 @@ namespace MCCDesktop.Instruments
             }
         }
 
-        public async Task<byte[]> GetPhoto(string photoPath)
+        public async Task<byte[]?> GetPhoto(string photoPath)
         {
             var response = await _httpClient.GetAsync($"api/AddPhoto/Photo/{photoPath}");
             if (response.IsSuccessStatusCode)
@@ -222,7 +225,7 @@ namespace MCCDesktop.Instruments
             }
         }
 
-        public async Task<AllShifts> GetShiftById(int idShift)
+        public async Task<AllShifts?> GetShiftById(int idShift)
         {
             try
             {
@@ -342,5 +345,214 @@ namespace MCCDesktop.Instruments
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        public async Task<List<AllShifts>> GetShiftsByEmployeeAndPeriod(
+    int employeeId, DateOnly startDate, DateOnly endDate)
+        {
+            try
+            {
+                var url = $"api/Reference/shifts/{employeeId}/period" +
+                         $"?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}";
+
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var shifts = await response.Content.ReadFromJsonAsync<List<AllShifts>>();
+                return shifts ?? new List<AllShifts>();
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Ошибка сети: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка получения смен: {ex.Message}");
+            }
+        }
+
+        public async Task<List<AllAvans>> GetAvansByEmployeeAndPeriod(
+        int employeeId, DateOnly startDate, DateOnly endDate)
+        {
+            try
+            {
+                // Формируем URL запроса
+                var url = $"api/Reference/avans/{employeeId}/period" +
+                         $"?startDate={startDate:yyyy-MM-dd}" +
+                         $"&endDate={endDate:yyyy-MM-dd}";
+
+                // Выполняем GET запрос
+                var response = await _httpClient.GetAsync(url);
+
+                // Проверяем успешность запроса
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Ошибка API: {response.StatusCode} - {errorContent}");
+                }
+
+                // Десериализуем ответ
+                var avansList = await response.Content.ReadFromJsonAsync<List<AllAvans>>();
+
+                // Проверяем на null и возвращаем результат
+                return avansList ?? new List<AllAvans>();
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Ошибка сети при получении авансов: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                throw new Exception($"Ошибка парсинга JSON при получении авансов: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при получении авансов: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> DeleteEmployee(int IdEmployee)
+        {
+            try
+            {
+                var url = $"api/Employee/DeleteEmployee/{IdEmployee}";
+                var response = await _httpClient.DeleteAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    throw new Exception(responsecontent);
+                }
+            }
+            catch (Exception ex)  
+            {
+                throw new Exception($"ERROR!!!!!!! - {ex.Message}");
+            }
+        }
+
+        public async Task<bool> CreateAvans(AddAvans avansDto)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/Reference/AddAvans", avansDto);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateAvans(int avansId, UpdateAvansRequest dto)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/Reference/avans/{avansId}/update", dto);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteAvans(int IdAvans)
+        {
+            try
+            {
+                var url = $"api/Reference/DeleteAvans/{IdAvans}";
+                var response = await _httpClient.DeleteAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    throw new Exception(responsecontent);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"ERROR!!!!!!! - {ex.Message}");
+            }
+        }
+
+        public async Task<bool> DeleteShifts(int IdShift)
+        {
+            try
+            {
+                var url = $"api/WorkHours/DeleteShift/{IdShift}";
+                var response = await _httpClient.DeleteAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    var responsecontent = await response.Content.ReadAsStringAsync();
+                    throw new Exception(responsecontent);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"ERROR!!!!!!! - {ex.Message}");
+            }
+        }
+
+        public async Task<bool> CreatePayout(AddPayout dto)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/Payout/create", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Ошибка API: {response.StatusCode} - {errorContent}");
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+                //if (result != null && result.TryGetValue("IdPayout", out var id))
+                //{
+                //    return Convert.ToInt32(id);
+                //}
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка создания выплаты: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> PostLogin(UserPasswordDto userPasswordDto)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("/api/Autorization/Autorization", userPasswordDto);
+                if (!response.IsSuccessStatusCode) 
+                {
+                var messageResponse = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show(messageResponse, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                var result = await response.Content.ReadFromJsonAsync<AllRoleToken>();
+                DataStorage.RoleName = result!.Name;
+                DataStorage.Token = result.Token;
+                return true;
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+        }
+
+
     }
 }

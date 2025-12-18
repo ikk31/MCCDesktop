@@ -83,8 +83,8 @@ namespace MCCDesktop.Views
                     Console.WriteLine($"Сотрудник: ID={emp.IdEmployee}, Name={emp.Name}, LastName={emp.LastName}, FullName={emp.FullName}");
                 }
 
-                EmployeeComboBox.ItemsSource = _employees;
-                EmployeeComboBox.DisplayMemberPath = "FullName"; // Это computed свойство - должно работать
+                EmployeeComboBox.ItemsSource = _employees.Where(x => x.IsDelete == false);
+                EmployeeComboBox.DisplayMemberPath = "FullName"; 
 
                 WorkplaceComboBox.ItemsSource = _workplaces;
                 WorkplaceComboBox.DisplayMemberPath = "Name";
@@ -503,6 +503,7 @@ namespace MCCDesktop.Views
                     HourlyRate = hourlyRate,
                     BreakDuration = breakDuration,
                     Notes = string.IsNullOrWhiteSpace(NotesTextBox.Text) ? null : NotesTextBox.Text.Trim(),
+                    IsDelete = false,
 
                     // Добавляем рассчитанные поля
                     WorkHours = workHours,
@@ -729,7 +730,7 @@ namespace MCCDesktop.Views
 
                 var stack = new StackPanel { Margin = new Thickness(20) };
 
-                var rates = new[] { 180, 190, 200, 215, 220, 250 };
+                var rates = new[] { 180, 190, 200, 205, 215, 220, 250 };
                 foreach (var rate in rates)
                 {
                     var button = new Button

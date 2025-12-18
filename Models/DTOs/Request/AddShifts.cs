@@ -19,5 +19,6 @@ namespace MCCDesktop.Models.DTOs.Request
         public int? BreakDuration { get; set; }
         public decimal? TotalEarned { get; set; }
         public double? WorkHours { get; set; }
+        public bool? IsDelete { get; set; }
     }
 }

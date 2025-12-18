@@ -3,12 +3,17 @@
 namespace MCCDesktop.Views
 {
     using MCCDesktop.Instruments;
+    using MCCDesktop.Models.DTOs.Request;
     using MCCDesktop.Models.DTOs.Response;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
+    using System.Globalization;
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Media;
 
     /// <summary>
     /// Логика взаимодействия для SalariesPage.xaml
@@ -17,8 +22,8 @@ namespace MCCDesktop.Views
     {
         private readonly ApiClient _apiClient;
         private ObservableCollection<AllEmployees> _employees;
-        private ObservableCollection<ShiftDto> _shifts;
-        private ObservableCollection<AdvanceDto> _advances;
+        private ObservableCollection<AllShifts> _shifts;
+        private ObservableCollection<AllAvans> _avans;
 
         // Текущие данные
         private AllEmployees _currentEmployee;
@@ -26,35 +31,14 @@ namespace MCCDesktop.Views
         private DateOnly _currentPeriodEnd;
         private CalculationResult _currentResult;
 
-        public class ShiftDto
-        {
-            public int IdShifts { get; set; }
-            public DateOnly Date { get; set; }
-            public TimeSpan StartTime { get; set; }
-            public TimeSpan EndTime { get; set; }
-            public double WorkHours { get; set; }
-            public int HourlyRate { get; set; }
-            public decimal TotalEarned { get; set; }
-            public string WorkplaceName { get; set; }
-            public string Notes { get; set; }
-        }
-
-        public class AdvanceDto
-        {
-            public int IdAdvance { get; set; }
-            public DateOnly AdvanceDate { get; set; }
-            public decimal Amount { get; set; }
-            public string Notes { get; set; }
-        }
-
         public class CalculationResult
         {
             public decimal TotalHours { get; set; }
             public decimal TotalEarnings { get; set; }
-            public decimal TotalAdvances { get; set; }
+            public decimal TotalAvans { get; set; }
             public decimal NetAmount { get; set; }
             public int ShiftCount { get; set; }
-            public int AdvanceCount { get; set; }
+            public int AvansCount { get; set; }
             public DateOnly PeriodStart { get; set; }
             public DateOnly PeriodEnd { get; set; }
         }
@@ -64,14 +48,18 @@ namespace MCCDesktop.Views
             InitializeComponent();
             _apiClient = new ApiClient();
             _employees = new ObservableCollection<AllEmployees>();
-            _shifts = new ObservableCollection<ShiftDto>();
-            _advances = new ObservableCollection<AdvanceDto>();
+            _shifts = new ObservableCollection<AllShifts>();
+            _avans = new ObservableCollection<AllAvans>();
 
             Loaded += SalaryPage_Loaded;
             InitializeEvents();
 
             // Устанавливаем сегодняшнюю дату в "по"
             EndDatePicker.SelectedDate = DateTime.Today;
+
+            AvansDataGrid.IsReadOnly = false; // Должно быть false
+            AvansDataGrid.CanUserAddRows = false;
+            AvansDataGrid.CanUserDeleteRows = false;
         }
 
         private void InitializeEvents()
@@ -88,8 +76,6 @@ namespace MCCDesktop.Views
             StartDatePicker.SelectedDate = new DateTime(today.Year, today.Month, 1);
             EndDatePicker.SelectedDate = today;
         }
-
-        // ============ ОБРАБОТЧИКИ КНОПОК БЫСТРОГО ВЫБОРА ============
 
         private void TodayBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -144,6 +130,8 @@ namespace MCCDesktop.Views
         {
             await LoadEmployees();
             SetDefaultDates();
+
+            AddAvansEmployeeCombo.ItemsSource = _employees;
         }
 
         private async Task LoadEmployees()
@@ -168,6 +156,74 @@ namespace MCCDesktop.Views
                 MessageBox.Show($"Ошибка загрузки сотрудников: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private CalculationResult CalculateTotals()
+        {
+            var result = new CalculationResult();
+
+            try
+            {
+                // 1. Рассчитываем по сменам (AllShifts)
+                var shiftsInPeriod = _shifts
+                    .Where(s => s.Date.HasValue &&
+                               s.Date.Value >= _currentPeriodStart &&
+                               s.Date.Value <= _currentPeriodEnd)
+                    .ToList();
+
+                result.ShiftCount = shiftsInPeriod.Count;
+
+                // Сумма часов (WorkHours имеет тип double?)
+                foreach (var shift in shiftsInPeriod)
+                {
+                    if (shift.WorkHours.HasValue)
+                    {
+                        result.TotalHours += (decimal)shift.WorkHours.Value;
+                    }
+                }
+
+                // Общий заработок (TotalEarned имеет тип decimal?)
+                foreach (var shift in shiftsInPeriod)
+                {
+                    if (shift.TotalEarned.HasValue)
+                    {
+                        result.TotalEarnings += shift.TotalEarned.Value;
+                    }
+                }
+
+                // 2. Рассчитываем по авансам (AvansDto)
+                var avansInPeriod = _avans
+                    .Where(a => a.Date >= _currentPeriodStart &&
+                               a.Date <= _currentPeriodEnd)
+                    .ToList();
+
+                result.AvansCount = avansInPeriod.Count;
+                result.TotalAvans = (decimal)avansInPeriod.Sum(a => a.Amount);
+
+                // 3. Рассчитываем чистую сумму к выплате
+                result.NetAmount = result.TotalEarnings - result.TotalAvans;
+
+                // 4. Заполняем период
+                result.PeriodStart = _currentPeriodStart;
+                result.PeriodEnd = _currentPeriodEnd;
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку, но продолжаем работу
+                Debug.WriteLine($"Ошибка расчета итогов: {ex.Message}");
+
+                // Устанавливаем значения по умолчанию
+                result.ShiftCount = 0;
+                result.TotalHours = 0;
+                result.TotalEarnings = 0;
+                result.AvansCount = 0;
+                result.TotalAvans = 0;
+                result.NetAmount = 0;
+                result.PeriodStart = _currentPeriodStart;
+                result.PeriodEnd = _currentPeriodEnd;
+            }
+
+            return result;
         }
 
         private async Task CalculateSalary()
@@ -212,7 +268,7 @@ namespace MCCDesktop.Views
                 await LoadShifts(selectedEmployee.IdEmployee, _currentPeriodStart, _currentPeriodEnd);
 
                 // Загружаем авансы за период (ВКЛЮЧИТЕЛЬНО конечную дату)
-                await LoadAdvances(selectedEmployee.IdEmployee, _currentPeriodStart, _currentPeriodEnd);
+                await LoadAvans(selectedEmployee.IdEmployee, _currentPeriodStart, _currentPeriodEnd);
 
                 // Рассчитываем итоги
                 _currentResult = CalculateTotals();
@@ -222,7 +278,7 @@ namespace MCCDesktop.Views
                 // Обновляем UI
                 UpdateCalculationResult();
 
-                StatusText.Text = $"Рассчитано: {_currentResult.ShiftCount} смен, {_currentResult.AdvanceCount} авансов";
+                StatusText.Text = $"Рассчитано: {_currentResult.ShiftCount} смен, {_currentResult.AvansCount} авансов";
             }
             catch (Exception ex)
             {
@@ -236,113 +292,81 @@ namespace MCCDesktop.Views
         {
             try
             {
-                // ВАЖНО: используем ВКЛЮЧИТЕЛЬНО endDate
-                // Ваш endpoint должен учитывать: WHERE Date >= @startDate AND Date <= @endDate
+                StatusText.Text = $"Загрузка смен за период {startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}...";
 
-                // TODO: Замените на ваш реальный endpoint
-                // var shifts = await _apiClient.GetShiftsByEmployeeAndPeriod(employeeId, startDate, endDate);
+                // Загружаем смены из API
+                var shifts = await _apiClient.GetShiftsByEmployeeAndPeriod(employeeId, startDate, endDate);
 
-                // Пока используем тестовые данные
+                // Очищаем текущую коллекцию
                 _shifts.Clear();
 
-                // Генерируем тестовые смены в выбранном периоде
-                var days = (endDate.DayNumber - startDate.DayNumber) + 1;
-
-                for (int i = 0; i < Math.Min(days, 10); i++) // Макс 10 смен для теста
+                if (shifts != null && shifts.Any())
                 {
-                    var shiftDate = startDate.AddDays(i);
-
-                    _shifts.Add(new ShiftDto
+                    foreach (var shift in shifts)
                     {
-                        IdShifts = i + 1,
-                        Date = shiftDate,
-                        StartTime = TimeSpan.FromHours(9),
-                        EndTime = TimeSpan.FromHours(18),
-                        WorkHours = 8.5,
-                        HourlyRate = 500 + (i * 10),
-                        TotalEarned = (8.5m * (500 + (i * 10))),
-                        WorkplaceName = i % 2 == 0 ? "Кафе Центральное" : "Кафе Парковое",
-                        Notes = i == 0 ? "Первая смена" : $"Смена #{i + 1}"
-                    });
-                }
+                        _shifts.Add(shift); // Добавляем напрямую AllShifts
+                    }
 
-                ShiftsDataGrid.ItemsSource = _shifts;
+                    ShiftsDataGrid.ItemsSource = _shifts;
+                    StatusText.Text = $"Загружено {_shifts.Count} смен";
+                }
+                else
+                {
+                    ShiftsDataGrid.ItemsSource = null;
+                    StatusText.Text = "Смены за выбранный период не найдены";
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                StatusText.Text = "Ошибка соединения с сервером";
+                MessageBox.Show($"Ошибка загрузки смен: {ex.Message}\nПроверьте подключение к серверу.", "Ошибка сети",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
+                StatusText.Text = "Ошибка загрузки смен";
                 MessageBox.Show($"Ошибка загрузки смен: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async Task LoadAdvances(int employeeId, DateOnly startDate, DateOnly endDate)
+        // При загрузке авансов
+        private async Task LoadAvans(int employeeId, DateOnly startDate, DateOnly endDate)
         {
             try
             {
-                // ВАЖНО: используем ВКЛЮЧИТЕЛЬНО endDate
-                // Ваш endpoint должен учитывать: WHERE AdvanceDate >= @startDate AND AdvanceDate <= @endDate
+                var avansList = await _apiClient.GetAvansByEmployeeAndPeriod(employeeId, startDate, endDate);
 
-                // TODO: Замените на ваш реальный endpoint
-                // var advances = await _apiClient.GetAdvancesByEmployeeAndPeriod(employeeId, startDate, endDate);
+                // ОЧИЩАЕМ КОЛЛЕКЦИЮ ПРАВИЛЬНО
+                _avans.Clear();
 
-                // Пока используем тестовые данные
-                _advances.Clear();
-
-                // Генерируем тестовые авансы
-                var random = new Random();
-                var days = (endDate.DayNumber - startDate.DayNumber) + 1;
-
-                for (int i = 0; i < Math.Min(days / 7, 3); i++) // Примерно 3 аванса
+                foreach (var avans in avansList)
                 {
-                    var advanceDate = startDate.AddDays(i * 7);
-                    if (advanceDate > endDate) break;
-
-                    _advances.Add(new AdvanceDto
+                    var dto = new AllAvans
                     {
-                        IdAdvance = i + 1,
-                        AdvanceDate = advanceDate,
-                        Amount = random.Next(5000, 15000),
-                        Notes = $"Аванс #{i + 1}"
-                    });
+                        IdAvans = avans.IdAvans,
+                        Date = avans.Date,
+                        Amount = avans.Amount,
+                    };
+
+                    // Подписываемся на изменения для отладки
+                    dto.PropertyChanged += (s, e) =>
+                    {
+                        Console.WriteLine($"Аванс {dto.IdAvans}: {e.PropertyName} изменен");
+                    };
+
+                    _avans.Add(dto);
                 }
 
-                AdvancesDataGrid.ItemsSource = _advances;
+                // Устанавливаем ItemsSource только один раз
+                AvansDataGrid.ItemsSource = _avans;
+
+                Console.WriteLine($"Загружено {_avans.Count} авансов");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки авансов: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка загрузки авансов: {ex.Message}", "Ошибка");
             }
-        }
-
-        private CalculationResult CalculateTotals()
-        {
-            var result = new CalculationResult();
-
-            // Суммируем смены (только те, что входят в период)
-            result.TotalHours = (decimal)_shifts
-                .Where(s => s.Date >= _currentPeriodStart && s.Date <= _currentPeriodEnd)
-                .Sum(s => s.WorkHours);
-
-            result.TotalEarnings = _shifts
-                .Where(s => s.Date >= _currentPeriodStart && s.Date <= _currentPeriodEnd)
-                .Sum(s => s.TotalEarned);
-
-            result.ShiftCount = _shifts
-                .Count(s => s.Date >= _currentPeriodStart && s.Date <= _currentPeriodEnd);
-
-            // Суммируем авансы (только те, что входят в период)
-            result.TotalAdvances = _advances
-                .Where(a => a.AdvanceDate >= _currentPeriodStart && a.AdvanceDate <= _currentPeriodEnd)
-                .Sum(a => a.Amount);
-
-            result.AdvanceCount = _advances
-                .Count(a => a.AdvanceDate >= _currentPeriodStart && a.AdvanceDate <= _currentPeriodEnd);
-
-            // Рассчитываем чистую сумму
-            result.NetAmount = result.TotalEarnings - result.TotalAdvances;
-
-            return result;
         }
 
         private void UpdateCalculationResult()
@@ -358,7 +382,7 @@ namespace MCCDesktop.Views
             ShiftCountText.Text = _currentResult.ShiftCount.ToString();
             TotalHoursText.Text = $"{_currentResult.TotalHours:F2} ч";
             TotalEarningsText.Text = $"{_currentResult.TotalEarnings:F2} ₽";
-            TotalAdvancesText.Text = $"{_currentResult.TotalAdvances:F2} ₽";
+            TotalAvansText.Text = $"{_currentResult.TotalAvans:F2} ₽";
             NetAmountText.Text = $"{_currentResult.NetAmount:F2} ₽";
 
             // Обновляем информацию для создания выплаты
@@ -394,49 +418,14 @@ namespace MCCDesktop.Views
                     .Select(s => s.IdShifts)
                     .ToList();
 
-                var advanceIds = _advances
-                    .Where(a => a.AdvanceDate >= _currentPeriodStart && a.AdvanceDate <= _currentPeriodEnd)
-                    .Select(a => a.IdAdvance)
+                var advanceIds = _avans
+                    .Where(a => a.Date >= _currentPeriodStart && a.Date <= _currentPeriodEnd)
+                    .Select(a => a.IdAvans)
                     .ToList();
 
-                // Создаем DTO для запроса
-                //var payoutDto = new CreatePayoutWithLinksDto
-                //{
-                //    IdEmployee = _currentEmployee.IdEmployee,
-                //    PeriodStart = _currentPeriodStart,
-                //    PeriodEnd = _currentPeriodEnd,
-                //    PeriodName = PeriodNameTextBox.Text.Trim(),
-                //    ShiftIds = shiftIds,
-                //    AdvanceIds = advanceIds,
-                //    Notes = NotesTextBox.Text
-                //};
-
-                // Вызываем API для создания выплаты
+                
                 StatusText.Text = "Создание выплаты...";
-                //var payoutId = await _apiClient.CreatePayoutWithLinks(payoutDto);
-
-                //if (payoutId.HasValue)
-                //{
-                //    // Если указана дата выплаты - отмечаем как выплаченную
-                //    if (PaymentDatePicker.SelectedDate.HasValue)
-                //    {
-                //        await _apiClient.MarkPayoutAsPaid(payoutId.Value,
-                //            DateOnly.FromDateTime(PaymentDatePicker.SelectedDate.Value));
-                //    }
-
-                //    MessageBox.Show($"✅ Выплата успешно создана!\nID: {payoutId}\nСумма: {_currentResult.NetAmount:F2} ₽", "Успех",
-                //        MessageBoxButton.OK, MessageBoxImage.Information);
-
-                //    // Очищаем форму
-                //    ClearForm();
-
-                //    StatusText.Text = "Выплата создана успешно";
-                //}
-                //else
-                //{
-                //    MessageBox.Show("Не удалось создать выплату", "Ошибка",
-                //        MessageBoxButton.OK, MessageBoxImage.Error);
-                //}
+               
             }
             catch (Exception ex)
             {
@@ -449,7 +438,7 @@ namespace MCCDesktop.Views
         {
             // Очищаем данные расчета
             _shifts.Clear();
-            _advances.Clear();
+            _avans.Clear();
             _currentEmployee = null;
             _currentResult = null;
 
@@ -460,7 +449,7 @@ namespace MCCDesktop.Views
             ShiftCountText.Text = "0";
             TotalHoursText.Text = "";
             TotalEarningsText.Text = "";
-            TotalAdvancesText.Text = "";
+            TotalAvansText.Text = "";
             NetAmountText.Text = "";
             PayoutPeriodText.Text = "";
             PeriodNameTextBox.Text = "";
@@ -468,9 +457,365 @@ namespace MCCDesktop.Views
             PaymentDatePicker.SelectedDate = null;
 
             ShiftsDataGrid.ItemsSource = null;
-            AdvancesDataGrid.ItemsSource = null;
+            AvansDataGrid.ItemsSource = null;
 
             StatusText.Text = "Выберите сотрудника и период для расчета";
+        }
+
+        private void DeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AddBtn_Click(object sender, RoutedEventArgs e)
+        {
+            //AddEditAvansWindow addEditAvansWindow = new AddEditAvansWindow();
+            //addEditAvansWindow.ShowDialog();
+        }
+
+        private async void  AddAvansButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Проверка выбора сотрудника
+                if (AddAvansEmployeeCombo.SelectedItem is not AllEmployees selectedEmployee)
+                {
+                    MessageBox.Show("Выберите сотрудника", "Внимание",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Проверка даты
+                if (!AddAvansDatePicker.SelectedDate.HasValue)
+                {
+                    MessageBox.Show("Выберите дату аванса", "Внимание",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Проверка суммы
+                if (!decimal.TryParse(AddAvansAmountTextBox.Text, out decimal amount) || amount <= 0)
+                {
+                    MessageBox.Show("Введите корректную сумму аванса (больше 0)", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var avansDto = new AddAvans
+                {
+                    IdEmployee = selectedEmployee.IdEmployee,
+                    Date = DateOnly.FromDateTime(AddAvansDatePicker.SelectedDate.Value),
+                    Amount = amount,
+                    IsDelete = false
+                   
+                };
+
+                StatusText.Text = "Создание аванса...";
+
+                // Используем bool версию
+                var success = await _apiClient.CreateAvans(avansDto);
+
+                if (success)
+                {
+                    MessageBox.Show($"✅ Аванс успешно добавлен!\nСумма: {amount:F2} ₽",
+                        "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Очищаем форму
+                    ClearAvansForm();
+
+                    // Если текущий сотрудник тот же - обновляем список авансов
+                    if (_currentEmployee?.IdEmployee == selectedEmployee.IdEmployee)
+                    {
+                        await LoadAvans(selectedEmployee.IdEmployee, _currentPeriodStart, _currentPeriodEnd);
+                    }
+
+                    StatusText.Text = "Аванс успешно добавлен";
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось создать аванс", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка создания аванса: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+        }
+
+        private void ClearAvansFormButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClearAvansForm();
+        }
+        private void ClearAvansForm()
+        {
+            AddAvansDatePicker.SelectedDate = DateTime.Today;
+            AddAvansAmountTextBox.Text = "";
+            
+            StatusText.Text = "Форма очищена";
+        }
+        private async Task RefreshAvansList()
+        {
+            try
+            {
+                if (_currentEmployee == null)
+                {
+                    StatusText.Text = "Сначала выберите сотрудника";
+                    return;
+                }
+
+                if (!StartDatePicker.SelectedDate.HasValue || !EndDatePicker.SelectedDate.HasValue)
+                {
+                    StatusText.Text = "Выберите период";
+                    return;
+                }
+
+                var startDate = DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value);
+                var endDate = DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value);
+
+                StatusText.Text = "Обновление списка авансов...";
+
+                // Загружаем авансы заново
+                await LoadAvans(_currentEmployee.IdEmployee, startDate, endDate);
+
+                // Обновляем расчет если он был выполнен
+                if (_currentResult != null)
+                {
+                    _currentResult = CalculateTotals();
+                    UpdateCalculationResult();
+                }
+
+                StatusText.Text = "Список авансов обновлен";
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = "Ошибка обновления";
+                MessageBox.Show($"Ошибка обновления списка авансов: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private async void DeleteAvansBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (AvansDataGrid.SelectedItem is not AllAvans selectedAvans)
+                {
+                    MessageBox.Show("Выберите аванс для удаления", "Внимание",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"Вы уверены, что хотите удалить аванс от {selectedAvans.Date:dd.MM.yyyy} " +
+                    $"на сумму {selectedAvans.Amount:F2} ₽?\n\n" +
+                    "Удаление будет мягким (аванс останется в базе, но будет скрыт).",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Вызываем метод удаления в ApiClient (нужно добавить)
+                    var success = await _apiClient.DeleteAvans(selectedAvans.IdAvans);
+
+                    if (success)
+                    {
+                        MessageBox.Show("✅ Аванс успешно удален", "Успех",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        // Обновляем список
+                        await RefreshAvansList();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось удалить аванс", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка удаления аванса: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+        }
+
+        
+
+
+        private void AvansDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            // Автоматически не завершаем редактирование - ждем кнопку Сохранить
+            e.Cancel = true;
+        }
+
+        private void AvansDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            // При загрузке строки скрываем кнопку сохранения
+            var saveButton = FindVisualChild<Button>(e.Row, "SaveButton");
+            if (saveButton != null)
+            {
+                saveButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void AvansAmount_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Валидация ввода суммы
+            var textBox = sender as TextBox;
+            string newText = textBox.Text.Insert(textBox.SelectionStart, e.Text);
+
+            // Разрешаем цифры, точку и запятую
+            if (!decimal.TryParse(newText.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private async void DeleteAvansButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button?.Tag == null || !int.TryParse(button.Tag.ToString(), out int avansId))
+                return;
+
+            try
+            {
+                var avans = _avans.FirstOrDefault(a => a.IdAvans == avansId);
+                if (avans == null)
+                    return;
+
+                var result = MessageBox.Show(
+                    $"Вы уверены, что хотите удалить аванс от {avans.Date:dd.MM.yyyy} " +
+                    $"на сумму {avans.Amount:F2} ₽?\n\n" +
+                    "Удаление будет мягким (аванс останется в базе, но будет скрыт).",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    StatusText.Text = "Удаление аванса...";
+
+                    var success = await _apiClient.DeleteAvans(avansId);
+
+                    if (success)
+                    {
+                        _avans.Remove(avans);
+                        if (_currentEmployee != null && _currentResult != null)
+                        {
+                            _currentResult = CalculateTotals();
+                            UpdateCalculationResult();
+                        }
+
+                        StatusText.Text = "Аванс успешно удален";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не удалось удалить аванс", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка удаления: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Вспомогательный метод для поиска дочерних элементов
+        private T FindVisualChild<T>(DependencyObject parent, string childName = null) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T typedChild)
+                {
+                    if (string.IsNullOrEmpty(childName) ||
+                        (child is FrameworkElement fe && fe.Name == childName))
+                    {
+                        return typedChild;
+                    }
+                }
+
+                var result = FindVisualChild<T>(child, childName);
+                if (result != null) return result;
+            }
+
+            return null;
+        }
+
+        private async void CreatePayoutBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Проверяем что расчет выполнен
+                if (_currentEmployee == null || _currentResult == null)
+                {
+                    MessageBox.Show("Сначала выполните расчет зарплаты");
+                    return;
+                }
+
+                // Получаем ID смен и авансов за период
+                var shiftIds = _shifts
+                    .Where(s => s.Date >= _currentPeriodStart && s.Date <= _currentPeriodEnd)
+                    .Select(s => s.IdShifts)
+                    .ToList();
+
+                var avansIds = _avans
+                    .Where(a => a.Date >= _currentPeriodStart && a.Date <= _currentPeriodEnd)
+                    .Select(a => a.IdAvans)
+                    .ToList();
+
+                // Создаем DTO
+                var payoutDto = new AddPayout
+                {
+                    IdEmployee = _currentEmployee.IdEmployee,
+                    PeriodStart = _currentPeriodStart,
+                    PeriodEnd = _currentPeriodEnd,
+                    PeriodName = PeriodNameTextBox.Text.Trim(),
+                    TotalAmount = _currentResult.NetAmount,
+                    TotalHours = (int)_currentResult.TotalHours,
+                    ShiftIds = shiftIds,
+                    AvansIds = avansIds,
+                    Notes = NotesTextBox.Text,
+                    PaidAt = PaymentDatePicker.SelectedDate.HasValue
+                        ? DateOnly.FromDateTime(PaymentDatePicker.SelectedDate.Value)
+                        : null
+                };
+
+                StatusText.Text = "Создание выплаты...";
+
+                // Отправляем запрос
+                var payoutId = await _apiClient.CreatePayout(payoutDto);
+
+                if (payoutId)
+                {
+                    MessageBox.Show($"✅ Выплата успешно создана!\nСумма: {_currentResult.NetAmount:F2} ₽",
+                        "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Очищаем форму
+                    ClearForm();
+                    StatusText.Text = "Выплата создана успешно";
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось создать выплату", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка создания выплаты: {ex.Message}", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

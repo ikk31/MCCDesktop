@@ -47,7 +47,8 @@
                 <GroupBox Header="Дата смены" FontWeight="Bold" Margin="0,0,0,10">
                     <DatePicker x:Name="ShiftDatePicker" 
                                Height="35"
-                               SelectedDateFormat="Short"/>
+                               SelectedDateFormat="Short"
+                                Focusable="False"/>
                 </GroupBox>
 
                 <!-- Сотрудник -->

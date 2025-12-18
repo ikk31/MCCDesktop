@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MCCDesktop.Instruments;
+using MCCDesktop.Models.DTOs.Request;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,15 +21,25 @@ namespace MCCDesktop.Views
     /// </summary>
     public partial class LoginPage : Window
     {
+        private readonly ApiClient _apiClient;
         public LoginPage()
         {
             InitializeComponent();
+            _apiClient = new();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
+            (sender as Button)!.IsEnabled = false;
+            if (UsernameBox.Text == null || PasswordBox.Password == null)
+                MessageBox.Show("Заполните обязательный поля", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            if(await _apiClient.PostLogin(new UserPasswordDto() { Name = UsernameBox.Text, Password = PasswordBox.Password}))
+            {
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
+                Close();
+            }
+            (sender as Button)!.IsEnabled = true;
         }
     }
 }

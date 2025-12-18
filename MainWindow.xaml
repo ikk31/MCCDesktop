@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCDesktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="1350" WindowStartupLocation="CenterScreen">
+        Title="MainWindow" Height="850" Width="1350" WindowStartupLocation="CenterScreen">
     <Grid>
         <DockPanel>
             <!-- Header с логотипом и названием -->
@@ -26,7 +26,7 @@
                     <Button x:Name="TimeTrackingBtn" Content="Учёт рабочего времени" Style="{StaticResource NavButtonStyle}" Width="213" Click="TimeTrackingBtn_Click"/>
                     <Button x:Name="SalariesBtn" Content="Зарплаты" Style="{StaticResource NavButtonStyle}" Click="SalariesBtn_Click"/>
                     <Button x:Name="WorkCalendar" Content="Календарь смен" Style="{StaticResource NavButtonStyle}" Click="WorkCalendar_Click"/>
-                    <Button x:Name="ListBtn" Content="Списки" Style="{StaticResource NavButtonStyle}"/>
+                    <!--<Button x:Name="ListBtn" Content="Списки" Style="{StaticResource NavButtonStyle}"/>-->
                     <Button x:Name="LogoutBtn" Content="Выход" Style="{StaticResource NavButtonStyle}" Margin="0,20,0,0" Click="LogoutBtn_Click"/>
                 </StackPanel>
             </Border>
